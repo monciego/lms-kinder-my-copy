@@ -19,10 +19,13 @@ return [
         ],
         'teacher' => [
             'users' => 'c,r,u,d',
+            'payments' => 'c,r,u,d',
             'profile' => 'r,u'
         ],
         'student' => [
-            'profile' => 'r,u',
+            'users' => 'c,r,u,d',
+            'payments' => 'c,r,u,d',
+            'profile' => 'r,u'
         ]
     ],
 

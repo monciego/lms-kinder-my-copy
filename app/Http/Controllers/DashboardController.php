@@ -10,9 +10,9 @@ class DashboardController extends Controller
    public function index()
    {
        if(Auth::user()->hasRole('student')){
-            return view('userdash');
+            return view('studentdash');
        }elseif(Auth::user()->hasRole('teacher')){
-            return view('blogwriterdash');
+            return view('teacherdash');
        }elseif(Auth::user()->hasRole('admin')){
         return view('dashboard');
    }
@@ -21,10 +21,5 @@ class DashboardController extends Controller
    public function myprofile()
    {
     return view('myprofile');
-   }
-
-   public function postcreate()
-   {
-    return view('postcreate');
    }
 }

@@ -1,9 +1,13 @@
 <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0">
-    <div>
-        {{ $logo }}
-    </div>
-
-    <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-        {{ $slot }}
+    <div class="sm:w-3/5 w-full m-6 p-8 bg-white shadow-md overflow-hidden sm:rounded-lg">
+        <div class="heading">
+            <h1 class="text-center pb-8 text-4xl font-extrabold text-blue-500 cursor-default text-shadow">LMS FOR KINDERGARDEN</h1>
+        </div>
+        <div class="grid grid-cols-2 items-center gap-5">
+            <div>
+                {{ $logo }}
+            </div>
+                {{ $slot }}
+        </div>
     </div>
 </div>

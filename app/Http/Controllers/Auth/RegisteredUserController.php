@@ -9,6 +9,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
 
 class RegisteredUserController extends Controller
 {
@@ -46,6 +47,9 @@ class RegisteredUserController extends Controller
         $user->attachRole($request->role_id); 
         event(new Registered($user));
 
-        return redirect(RouteServiceProvider::HOME);
+        Session::flash('success', 'Account added successfully');
+        
+        return redirect()->route('register');
+        // return redirect(RouteServiceProvider::HOME);
     }
 }
