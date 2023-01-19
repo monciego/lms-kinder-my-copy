@@ -51,7 +51,7 @@
 </div>
     
     
-<!------------------ create modal ------------------>
+<!-- create modal -->
 <div class="modal fade" id="accountModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -60,7 +60,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body px-5">
-                <!------------------ input fields ------------------>
+                <!-- input fields -->
                 
                 <ul id="save_errlist"></ul>
                                                 
@@ -104,7 +104,7 @@
                     </select>
                 </div>
     
-                <!------------------ end- input fields ------------------>
+                <!-- end- input fields -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -113,9 +113,9 @@
         </div>
     </div>
 </div>
-<!------------------ end- create modal ------------------>
+<!-- end- create modal -->
 
-<!------------------ edit modal ------------------>
+<!-- edit modal -->
 <div class="modal fade" id="accountEditModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -124,7 +124,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body px-5">
-                <!------------------ input fields ------------------>
+                <!-- input fields -->
                 
                 <ul id="edit_errlist"></ul>
                                                 
@@ -162,7 +162,7 @@
                             name="password_confirmation" required />
                 </div>
                
-                <!------------------ end- input fields ------------------>
+                <!-- end- input fields -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -171,9 +171,9 @@
         </div>
     </div>
 </div>
-<!------------------ end- edit modal ------------------>
+<!-- end- edit modal -->
 
-<!------------------ delete confirmation modal ------------------>
+<!-- delete confirmation modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-confirm">
         <div class="modal-content">
@@ -195,7 +195,7 @@
         </div>
     </div>
 </div>
-<!------------------ end- delete confirmation modal ------------------>
+<!-- end- delete confirmation modal -->
 
 
 @section('scripts')
@@ -203,7 +203,7 @@
       
 $(document).ready(function () {
    
-    // show account 
+    // show 
     fetchAccount();
     
     function fetchAccount() { 
@@ -238,8 +238,57 @@ $(document).ready(function () {
             }
         });
     }
+    
+    
+    // store
+    $(document).on('click','.save-account', function(e) { 
+        e.preventDefault();
+        
+        var data = {
+        'name': $('#name').val(),
+        'email': $('#email').val(),
+        'password': $('#password').val(),
+        'password_confirmation': $('#password_confirmation').val(),
+        'role_id': $('#role_id').val(),
+        }
+        
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+        $.ajax({
+            type: "POST",
+            url: "accounts",
+            data: data,
+            dataType: "json",
+            success: function (response) {
+                console.log(response);
+                if(response.status == 400) { 
+                    $('#save_errlist').html("");
+                    $('#save_errlist').addClass("alert alert-danger");
+                    $.each(response.errors, function (key, error_values) { 
+                        $('#save_errlist').append('<li>'+ error_values +'</li>')
+                    });
+                } else { 
+                    $('#save_errlist').html("");
+                    $('#save_errlist').removeClass("alert alert-danger");
+                    $('#accountModal').modal('hide');
+                    $('#accountModal').find('input').val("");
+                    
+                    fetchAccount();
+                    Swal.fire(
+                        'Good job!',
+                        response.message,
+                        'success'
+                    )
+                }
+            }
+        });
+    });
+    
 
-    // edit user 
+    // edit 
     $(document).on('click', '.edit-account', function (e) {
         e.preventDefault();
         
@@ -268,7 +317,7 @@ $(document).ready(function () {
         });
     });
     
-    // update user 
+    // update 
     $(document).on('click', '.update-account', function (e) {
         
         e.preventDefault();
@@ -313,6 +362,7 @@ $(document).ready(function () {
                 else { 
                 
                     $('#edit_errlist').html("");
+                    $('#edit_errlist').removeClass("alert alert-danger");
                     $('#accountEditModal').modal('hide');
                     $('#accountEditModal').find('input').val("");
                     
@@ -329,11 +379,19 @@ $(document).ready(function () {
         });
     });
 
-    // delete user
+     // display delete modal
+    var account_id;
+    $(document).on('click', '.delete-account', function (e) {
+        e.preventDefault();
+        account_id = $(this).val(); 
+        $('#deleteModal').modal('show');
+    });
+
+
+    // destroy
     $(document).on('click', '.delete-account-btn', function (e) {
         e.preventDefault();
         
-        var account_id = $('.delete-account').val();  
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -358,51 +416,6 @@ $(document).ready(function () {
         });
     });
     
-    // Storing new account
-    $(document).on('click','.save-account', function(e) { 
-        e.preventDefault();
-        
-        var data = {
-        'name': $('#name').val(),
-        'email': $('#email').val(),
-        'password': $('#password').val(),
-        'password_confirmation': $('#password_confirmation').val(),
-        'role_id': $('#role_id').val(),
-        }
-        
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-        $.ajax({
-            type: "POST",
-            url: "accounts",
-            data: data,
-            dataType: "json",
-            success: function (response) {
-                console.log(response);
-                if(response.status == 400) { 
-                    $('#save_errlist').html("");
-                    $('#save_errlist').addClass("alert alert-danger");
-                    $.each(response.errors, function (key, error_values) { 
-                        $('#save_errlist').append('<li>'+ error_values +'</li>')
-                    });
-                } else { 
-                    $('#save_errlist').html("");
-                    $('#accountModal').modal('hide');
-                    $('#accountModal').find('input').val("");
-                    
-                    fetchAccount();
-                    Swal.fire(
-                        'Good job!',
-                        response.message,
-                        'success'
-                    )
-                }
-            }
-        });
-    });
 
 });
     

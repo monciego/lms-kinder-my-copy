@@ -5,9 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Quiz;
+use App\Models\Question;
+use App\Models\Response;
+use App\Models\Result;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Builder;
 
 class QuizController extends Controller
 {
@@ -22,7 +26,7 @@ class QuizController extends Controller
         
         // $quizzes = Quiz::where('user_id', $user_id)->get();
         
-        return view('t-quiz');
+        return view('quiz');
     }
 
     /**
@@ -47,6 +51,7 @@ class QuizController extends Controller
             'quiz_name' => 'required|string|max:255',
             'instruction' => 'required|string',
             'deadline' => 'required',
+            'category' => 'required',
         ]);
 
         if ($validator->fails()) {
@@ -61,6 +66,7 @@ class QuizController extends Controller
                 'quiz_name' => $request->quiz_name,
                 'instruction' => $request->instruction,
                 'deadline' => $request->deadline,
+                'category' => $request->category,
             ]);
             $quiz->user()->associate($user_id);
             $quiz->save();
@@ -71,6 +77,22 @@ class QuizController extends Controller
             ]);
         }
     }
+    
+    public function storeResult(Request $request) { 
+        
+        $quiz_id = $request->quiz_id;
+        $user_id = Auth::id();
+        $result = new Result; 
+        $result->score = $request->score; 
+        
+        $result->user()->associate($user_id);
+        $result->quiz()->associate($quiz_id);
+        $result->save();
+        return response()->json([ 
+            'quiz_id'=>$quiz_id,
+            'message'=>'Score added successfully',
+        ]);
+    }
 
     /**
      * Display the specified resource.
@@ -80,7 +102,22 @@ class QuizController extends Controller
      */
     public function show($id)
     {
-        //
+        return view('question', compact('id'));
+    }
+    
+    public function showMathProblem() 
+    {
+        return view('math-problem');
+    }
+    
+    public function showColor() 
+    {
+        return view('color');
+    }
+    
+    public function showReading() 
+    {
+        return view('reading');
     }
 
     /**
@@ -89,20 +126,115 @@ class QuizController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function showQuizzes() { 
-        $user_id = Auth::id();
-        $quizzes = Quiz::where('user_id', $user_id)
-        ->with('user')
-        ->get();
+    public function showQuizResponses(){ 
         
-        
+        return view('response');
+    
         return response()->json([ 
-            'quizzes'=>$quizzes,
+            'message'=>'here',
         ]);
+    }
+     
+    public function showColorQuizzes() { 
+        $role ; 
+        if(Auth::user()->hasRole('teacher')) { 
+            $role = "teacher";
+            $user_id = Auth::id();
+            $quizzes = Quiz::where('user_id', $user_id)
+            ->where('category', 'color')
+            ->with('user')
+            ->get();
+            
+            
+            return response()->json([ 
+                'quizzes'=>$quizzes,
+                'role'=>$role,
+            ]);
+        }
+        else { 
+            $role = "student";
+            $quizzes = Quiz::with('user')
+            ->where('category', 'color')
+            ->with('user')
+            ->get();
+                
+            
+            return response()->json([ 
+                'quizzes'=>$quizzes,
+                'role'=>$role,
+            ]);
+        }
+    } 
+     
+    public function showMathProblemQuizzes() { 
+        $role ; 
+        if(Auth::user()->hasRole('teacher')) { 
+            $role = "teacher";
+            $user_id = Auth::id();
+            $quizzes = Quiz::where('user_id', $user_id)
+            ->where('category', 'math-problem')
+            ->with('user')
+            ->get();
+            
+            
+            return response()->json([ 
+                'quizzes'=>$quizzes,
+                'role'=>$role,
+            ]);
+        }
+        else { 
+            $role = "student";
+            $quizzes = Quiz::with('user')
+            ->where('category', 'math-problem')
+            ->with('user')
+            ->get();
+                
+            
+            return response()->json([ 
+                'quizzes'=>$quizzes,
+                'role'=>$role,
+            ]);
+        }
+    }
+     
+    public function showQuizzes() { 
+    
+       
+        $role ; 
+        if(Auth::user()->hasRole('teacher')) { 
+            $role = "teacher";
+            $user_id = Auth::id();
+            $quizzes = Quiz::where('user_id', $user_id)
+            ->where('category', 'quiz')
+            ->with('user')
+            ->get();
+            
+            
+            return response()->json([ 
+                'quizzes'=>$quizzes,
+                'role'=>$role,
+            ]);
+        }
+        else { 
+            $role = "student";
+            $quizzes = Quiz::with('user')
+            ->where('category', 'quiz')
+            ->with('user')
+            ->get();
+                
+            
+            return response()->json([ 
+                'quizzes'=>$quizzes,
+                'role'=>$role,
+            ]);
+        }
+        
     }
      
     public function edit($id)
     {
+        
+    
         $quiz = Quiz::find($id);
         
         if ($quiz) {
@@ -130,7 +262,7 @@ class QuizController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'quiz_name' => 'required|string|max:255',
-            'instruction' => 'required|string',
+            'instruction' => 'string',
             'deadline' => 'required',
         ]);
 

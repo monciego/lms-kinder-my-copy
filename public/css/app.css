@@ -184462,6 +184462,10 @@ td {
   vertical-align: middle;
 }
 
+.mh-10 { 
+  min-height: 10rem;
+}
+
 /* navigation.blade.php */
 @media (min-width: 640px) { 
   .navigation { 
@@ -184606,6 +184610,124 @@ td {
     display: inline-block;
     margin: 100px auto;
 }
+
+/* question */
+.question .card.heading{
+  border-top: 1rem solid rgb(88, 42, 41);
+  border-radius: 1rem !important;
+}
+
+.question .questions-wrapper { 
+  border-radius: 1rem !important;
+  border-left: 1rem solid green !important; 
+}
+
+.input { 
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 1px solid rgb(229, 231, 235);
+}
+.input:focus , 
+.input:focus-visible { 
+  box-shadow: unset !important; 
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  border-bottom: 1px solid #000; 
+}
+
+.question .add_choices { 
+  cursor: pointer;
+  color: #0e0e0e; 
+}
+
+.question .add_choices:hover { 
+  cursor: pointer;
+  color: blue; 
+}
+
+.question .display_questions { 
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.add-option, 
+.key-answer { 
+  cursor: pointer;
+  transform: scale(0.9);
+  background-color: blue;
+  border-radius: 1rem;
+  padding: 0.2rem 1rem;
+  color: #fff;
+}
+
+.add-option[disabled] { 
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.add-option:hover,
+.key-answer:hover { 
+  transform: scale(1); 
+  transition: all 0.2s;
+}
+
+.circle { 
+    background: transparent;
+    border-radius: 50%;
+    border: 1px solid rgb(229, 225, 235);
+    height: 16px;
+    width: 16px;
+}
+
+.question .question_content { 
+  display: flex;
+  justify-content: space-between;
+}
+
+.question .question_content div:first-child { 
+  width: 80%; 
+}
+.question .question_content div:last-child { 
+  width: 20%; 
+}
+
+/* shapes */
+.shape .card-img { 
+    display: block;
+    object-fit: contain;
+    height: auto; 
+    width: 600px;
+    max-height: 100%;
+    max-width: 100%;
+    margin: auto;
+    padding-top: 1rem;
+}
+
+canvas.shape-board {
+  background: #fff;
+  display: block;
+  margin: 1rem auto;
+  border-radius: 5px;
+  border: 1px solid #000;
+  cursor: crosshair;
+  /* max-height: 100%;  
+  width: calc(100% - 2rem);
+  aspect-ratio: 1/1; */
+}
+
+/* reading */
+.reading-text { 
+  min-height: 15rem;
+  border: 1px solid;
+}
+
+
+
+
+
 
 
 

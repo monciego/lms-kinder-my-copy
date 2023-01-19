@@ -45,6 +45,21 @@ class User extends Authenticatable
     
     public function quizzes()
     {
-        return $this->hasMany(Quizzes::class);
+        return $this->hasMany(Quiz::class);
+    }
+    
+    public function responses()
+    {
+        return $this->hasMany(Response::class);
+    }
+    
+    public function shapes()
+    {
+        return $this->hasMany(Shape::class);
+    }
+    
+    public function results()
+    {
+        return $this->hasMany(Result::class);
     }
 }
