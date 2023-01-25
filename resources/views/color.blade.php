@@ -28,7 +28,6 @@
                                 
                                     <thead>
                                         <tr>
-                                            <th class="text-center">#</th>
                                             <th>Quiz</th>
                                             <th>Instruction</th>
                                             <th>Uploaded</th>
@@ -194,17 +193,18 @@
                             var deadline_formated = deadline.toString('dd-MMM-yyyy');
                             var url = '{{ route("quizzes.show", ":id") }}';
                             url = url.replace(':id', quiz.id);
-                            
+                            var response_url = '{{ route("show-quiz-responses", ":id") }}';
+                            response_url = response_url.replace(':id', quiz.id);
                             
                             $('.quiz-list').append(
                                 '<tr>'+
-                                    '<td class="text-center" style="width: 5%;">'+ count++ +'</td>'+
-                                    '<td style="width: 10%;">'+ quiz.quiz_name +'</td>'+
-                                    '<td style="width: 30%;">'+ quiz.instruction +'</td>'+
-                                    '<td style="width: 15%;">'+ created_at_formated +'</td>'+
-                                    '<td style="width: 15%;">'+ deadline_formated +'</td>'+
-                                    '<td style="width: 25%;">'+
+                                    '<td>'+ quiz.quiz_name +'</td>'+
+                                    '<td>'+ quiz.instruction +'</td>'+
+                                    '<td>'+ created_at_formated +'</td>'+
+                                    '<td>'+ deadline_formated +'</td>'+
+                                    '<td>'+
                                         '<a href="'+ url +'" class="show-question btn btn-success"> Show </a> '+
+                                        '<a href="'+ response_url +'" class="show-responses btn btn-secondary"> Response </a> '+
                                         '<button type"button" value="'+ quiz.id +'" class="edit-quiz btn btn-primary"> Edit </button> '+
                                         '<button type="button" value="'+ quiz.id +'" class="delete-quiz btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"> Delete </button> '+
                                     '</td>'+
@@ -220,14 +220,12 @@
                         $(".add-quiz-trigger").show();
                         $(".edit-quiz").show();
                         $(".delete-quiz").show();
-                      
-                        
                     }
                     else { 
                         $(".add-quiz-trigger").hide();
                         $(".edit-quiz").hide();
                         $(".delete-quiz").hide();
-                    
+                        $(".show-responses").hide();
                     }
                     
                 }

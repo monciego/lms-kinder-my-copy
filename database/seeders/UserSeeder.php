@@ -34,6 +34,15 @@ class UserSeeder extends Seeder
             ]);
            
             $user->attachRole('teacher');
+            
+            $user = new User;
+            $user = $user->create([
+                'name' => 'student',
+                'email' => 'student@gmail.com',
+                'password' => Hash::make('password'),
+            ]);
+           
+            $user->attachRole('student');
         }
     }
 }

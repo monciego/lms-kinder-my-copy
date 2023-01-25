@@ -196,7 +196,10 @@
                                               
                             var url = '{{ route("shapes.show", ":id") }}';
                             url = url.replace(':id', shape.id);
-                                              
+                                      
+                            var response_url = '{{ route("shape-responses", ":id") }}';
+                            response_url = response_url.replace(':id', shape.id);
+                                                        
                             $('.shape-list').append(
                                 '<tr>'+
                                     '<td class="text-center">'+ count++ +'</td>'+
@@ -205,7 +208,7 @@
                                     '<td>'+ deadline_formated +'</td>'+
                                     '<td>'+
                                         '<a href="'+ url +'" class="show-shape btn btn-success"> Show </a> '+
-                                        // '<button type"button" value="'+ shape.id +'" class="edit-shape btn btn-primary"> Edit </button> '+
+                                        '<a href="'+ response_url +'" class="show-response btn btn-secondary"> Responses </a> '+
                                         '<button type="button" value="'+ shape.id +'" class="delete-shape btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"> Delete </button> '+
                                     '</td>'+
                                 '</tr>'
@@ -220,14 +223,13 @@
                     if (response.role == 'teacher') {
                         $('.edit-shape').show(); 
                         $('.delete-shape').show(); 
-                        $('.show-shape').hide(); 
                         $('.create-modal-trigger').show(); 
                     }
                     else { 
                         $('.edit-shape').hide(); 
                         $('.delete-shape').hide(); 
                         $('.create-modal-trigger').hide(); 
-                        $('.show-shape').show(); 
+                        $('.show-response').hide(); 
                     }
                     
                     

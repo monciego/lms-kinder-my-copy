@@ -20,4 +20,9 @@ class Shape extends Model
     {
         return $this->belongsTo(User::class);
     }
+    
+    public function shape_responses()
+    {
+        return $this->hasMany(ShapeResponse::class);
+    }
 }

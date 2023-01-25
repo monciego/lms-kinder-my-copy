@@ -21,20 +21,27 @@
                         <div id="success_message"> </div>
                         <div class="card-body relative shape">
                             
-                            <input type="hidden" name="shape_id" id="shape-id" value="{{$id}}">
-                            
                             <div class="container mx-auto mt-4">
-                              
-                                <div class="card" style="width: fit-content; max-width: 100%; margin: auto;">
-                                    <div class="card-body" >
-                                        <div class="display-contents"></div>
-                                        <canvas class="shape-board" width="600" height="400"></canvas>
+                                <form method="POST" enctype="multipart/form-data" id="store-shape-response" action="javascript:void(0)" >
+                                    <div class="card" style="width: fit-content; max-width: 100%; margin: auto;">
+                                        <div class="card-body" >
+                                            <div class="display-contents"></div>
+                                            <canvas class="shape-board" id="shape-board" width="600" height="400"></canvas>
+                                            <input type="hidden" name="shape_id" id="shape-id" value="{{$id}}">
+                                            <input type="hidden" name="image_response" id="image_response">
+                                          
+                                            <!--displays image using jquery  -->
+                                            <div id="image_response_label_wrapper" class="px-3 d-flex justify-between" style="display: none !important;">
+                                                <p id="image_response_label"> Your Answer: </p>
+                                                <p id="image_response_score"> <!-- filled using jquery -->  </p>
+                                            </div>
+                                            <img src="" id="image_response_display" style="display: none; margin: auto; border: 1px solid #000;">
+                                            
+                                        </div>
+                                        
+                                        <button type="submit" class="btn btn-primary my-2 mx-4 submit-response"> Submit </button>
                                     </div>
-                                    
-                                    <!-- <button class="btn btn-danger clear  mx-4"> Clear </button> -->
-                                    <button class="btn btn-primary my-2  mx-4"> Submit </button>
-                                </div>
-                                
+                                </form>
                             </div>
                                 
                             
@@ -168,7 +175,45 @@
 <script>
     
     $(document).ready(function () {
+        $(document).on('submit' , '#store-shape-response' , function (e) {
+            e.preventDefault();
            
+           
+            var data_url = $('#shape-board')[0].toDataURL();
+            
+            $('#image_response').val(data_url);
+            
+            var formData = new FormData(this);
+            
+            console.log(formData);
+            
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            
+            var url = '{{ route("store-shape-responses") }}';
+            $.ajax({
+                type: "POST",
+                url: url, 
+                data: formData,
+                cache: false,
+                contentType: false,
+                processData: false,
+                success: function (response) {
+                    console.log(response);
+                        Swal.fire(
+                            'Good job!',
+                            response.message,
+                            'success'
+                        )
+                        window.location.reload();
+                }
+            });
+        });
+        
+                   
         // show  
         fetchShape();
         function fetchShape() { 
@@ -185,9 +230,6 @@
                     var count = 1; 
                     $('.display-contents').html("");
                     
-                         
-                    console.log(response.shapes);
-                
                     var created_at = new Date(response.shapes.created_at);
                     var created_at_formated = created_at.toString('dd-MMM-yyyy');
                     var deadline = new Date(response.shapes.deadline); 
@@ -211,6 +253,8 @@
                         $('.edit-shape').show(); 
                         $('.delete-shape').show(); 
                         $('.show-shape').hide(); 
+                        $('.submit-response').hide();
+                        $('.shape-board').hide();
                     }
                     else { 
                         $('.edit-shape').hide(); 
@@ -219,59 +263,20 @@
                     }
                     
                     
+                    // hide submit button if student has already passed his work  
+                    if (response.existance > 0) {
+                        $('.submit-response').hide();
+                        $('#shape-board').hide();
+                        $('#image_response_label_wrapper').show();
+                        $('#image_response_score').html('Score: '+ response.shapes_with_response[0].score);
+                        $('#image_response_display').css('display', 'block');
+                        $('#image_response_display').attr('src', response.shapes_with_response[0].image_response);
+                    }
+                    
                 }
             });
         }
         
-        // store
-        // $(document).on('click','.save-shape', function(e) { 
-        //     e.preventDefault();
-            
-        //     var data = {
-        //     'instruction': $('#instruction').val(),
-        //     'deadline': $('#deadline').val(),
-        //     'image': $('#image').val(),
-        //     }
-            
-        //     console.log(data);
-            
-        //     $.ajaxSetup({
-        //         headers: {
-        //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        //         }
-        //     });
-            
-        //     var url = '{{ route("shapes.store") }}';
-        //     $.ajax({
-        //         type: "POST",
-        //         url: url, 
-        //         data: data,
-        //         dataType: "json",
-        //         success: function (response) {
-        //             console.log(response);
-        //             if(response.status == 400) { 
-        //                 $('#save_errlist').html("");
-        //                 $('#save_errlist').addClass("alert alert-danger");
-        //                 $.each(response.errors, function (key, error_values) { 
-        //                     $('#save_errlist').append('<li>'+ error_values +'</li>')
-        //                 });
-        //             } else { 
-        //                 $('#save_errlist').html("");
-        //                 $('#save_errlist').removeClass("alert alert-danger");
-        //                 $('#shapeModal').modal('hide');
-        //                 $('#shapeModal').find('input').val("");
-                        
-        //                 // fetchShape();
-        //                 Swal.fire(
-        //                     'Good job!',
-        //                     response.message,
-        //                     'success'
-        //                 )
-        //             }
-        //         }
-        //     });
-            
-        // });
         
     });
  

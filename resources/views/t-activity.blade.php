@@ -13,7 +13,7 @@
                     <div class="row mx-3">
 
                         <!-- QUIZ -->
-                        <a href="{{ route('quizzes.index') }}" class="col-xl-4 col-md-6 mb-4">
+                        <a href="{{ route('show-quizzes') }}" class="col-xl-4 col-md-6 mb-4">
                             <div class="card border-left-primary shadow-sm h-100 py-6">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -77,7 +77,7 @@
                         <!-- END- COLOR -->
                         
                         <!-- COLOR -->
-                        <div class="col-xl-4 col-md-6 mb-4">
+                        <a href="{{ route('puzzle.index') }}" class="col-xl-4 col-md-6 mb-4">
                             <div class="card border-left-primary shadow-sm h-100 py-6">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
@@ -89,11 +89,11 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                         <!-- END- COLOR -->
                         
                         <!-- READING -->
-                        <a href="{{ route('show-reading') }}" class="col-xl-4 col-md-6 mb-4">
+                        <a href="{{ route('reading.index') }}" class="col-xl-4 col-md-6 mb-4">
                             <div class="card border-left-primary shadow-sm h-100 py-6">
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">

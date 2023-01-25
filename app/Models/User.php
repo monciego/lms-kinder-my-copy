@@ -62,4 +62,29 @@ class User extends Authenticatable
     {
         return $this->hasMany(Result::class);
     }
+    
+    public function readings()
+    {
+        return $this->hasMany(Reading::class);
+    }
+    
+    public function grades()
+    {
+        return $this->hasMany(Grade::class);
+    }
+    
+    public function shape_responses()
+    {
+        return $this->hasMany(ShapeResponse::class);
+    }
+    
+    public function puzzles()
+    {
+        return $this->hasMany(Puzzle::class);
+    }
+    
+    public function puzzle_responses()
+    {
+        return $this->hasMany(PuzzleResponse::class);
+    }
 }

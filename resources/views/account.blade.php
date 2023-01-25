@@ -27,7 +27,6 @@
                                 
                                     <thead>
                                         <tr>
-                                            <th class="text-center">#</th>
                                             <th>Name</th>
                                             <th>Account Type</th>
                                             <th>Email</th>
@@ -36,7 +35,30 @@
                                     </thead>
                                     
                                     <tbody class="account-list">
-                                        
+                                        @forelse ($users as $user)
+                                            <tr>
+                                                <td> {{$user->name}} </td>
+                                                @foreach($user->roles as $role)
+                                                    <td> {{$role->name}} </td>
+                                                @endforeach
+                                                <td> {{$user->email}} </td>
+                                                
+                                                <td>
+                                                @if(Auth::user()->hasRole('teacher|admin'))
+                                                    @if ($role->name == 'admin'  )
+                                                        <button disabled type="button" value="{{ $user->id }}" class="edit-account btn btn-primary"> Edit </button> 
+                                                        <button disabled type="button" value="{{ $user->id }}" class="delete-account btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"> Delete </button>
+                                                    @else 
+                                                        <button type="button" value="{{ $user->id }}" class="edit-account btn btn-primary"> Edit </button> 
+                                                        <button type="button" value="{{ $user->id }}" class="delete-account btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"> Delete </button>
+                                                    @endif
+                                                @endif
+                                                </td>
+                                                
+                                            </tr>
+                                        @empty 
+                                            <td>NO DATA FOUND</td>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -203,43 +225,6 @@
       
 $(document).ready(function () {
    
-    // show 
-    fetchAccount();
-    
-    function fetchAccount() { 
-        $.ajax({
-            type: "GET",
-            url: "/accounts/show-accounts",
-            dataType: "json",
-            success: function (response) {
-                var count = 1; 
-                $('.account-list').html("");
-                
-                if (response.users.length > 0) {
-                    $.each(response.users, function (key, user) { 
-                       
-                        $('.account-list').append(
-                            '<tr>'+
-                                '<td class="text-center">'+ count++ +'</td>'+
-                                '<td>'+ user.name +'</td>'+
-                                '<td>'+ user.roles +'</td>'+
-                                '<td>'+ user.email +'</td>'+
-                                '<td>' +
-                                    '<button type"button" value="'+ user.id +'" class="edit-account btn btn-primary"> Edit </button> '+
-                                    '<button type="button" value="'+ user.id +'" class="delete-account btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"> Delete </button> '+
-                                '</td>'+
-                            '</tr>'
-                        );
-                        
-                    });
-                } else { 
-                    $('.account-list').append('<div class="no-data"> No data Found </div>')
-                }
-            }
-        });
-    }
-    
-    
     // store
     $(document).on('click','.save-account', function(e) { 
         e.preventDefault();
@@ -276,7 +261,6 @@ $(document).ready(function () {
                     $('#accountModal').modal('hide');
                     $('#accountModal').find('input').val("");
                     
-                    fetchAccount();
                     Swal.fire(
                         'Good job!',
                         response.message,
@@ -366,7 +350,6 @@ $(document).ready(function () {
                     $('#accountEditModal').modal('hide');
                     $('#accountEditModal').find('input').val("");
                     
-                    fetchAccount();
                     Swal.fire(
                         'Good job!',
                         response.message,
@@ -406,7 +389,7 @@ $(document).ready(function () {
             success: function (response) {
     
                 $('#deleteModal').modal('hide');
-                fetchAccount();
+                
                 Swal.fire(
                     'Deleted!',
                     response.message,

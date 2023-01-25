@@ -221,7 +221,6 @@ class QuestionController extends Controller
             $question->option_4 =  $request->input('option_4');
             $question->key_answer =  $request->input('key_answer');
                         
-            $question->quiz()->associate($quiz_id);
             $question->save();
             
             return response()->json([ 

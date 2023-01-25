@@ -15,26 +15,138 @@
                     <div class="p-4 question d-flex flex-column gap-6 relative">
                         <div class="card mh-10 heading">
                         
-                            <input type="hidden" name="quiz_id" id="quiz_id" value="{{ $id }}">
-
                             <div class="card-body d-flex flex-column justify-content-center">
-                                <h5 class="card-title pb-3 border-b quiz-name"></h5>
-                                <p class="card-text fs-6 mb-0 quiz-instruction"></p>
-                                <p class="card-text fs-6 mb-0 date-uploaded pt-2"></p>
+                                <h5 class="card-title pb-3 border-b quiz-name"> {{ $quiz->quiz_name }} </h5>
+                                <p class="card-text fs-6 mb-0 quiz-instruction"> {{ $quiz->instruction }} </p>
+                                <p class="card-text fs-6 mb-0 date-uploaded pt-2">Date uploaded: {{ Carbon\carbon::parse($quiz->created_at)->format('d/m/Y g:i A') }}</p>
                                 <div class="d-flex justify-content-between">
-                                    <p class="card-text fs-6 mb-0 quiz-deadline"></p>
-                                    <p class="card-text fs-6 mb-0 score"></p>
+                                    <p class="card-text fs-6 mb-0 quiz-deadline">Deadline: {{ Carbon\carbon::parse($quiz->deadline)->format('d/m/Y g:i A') }} </p>
+                                    @if(Auth::user()->hasRole('student'))
+                                        <p class="card-text fs-6 mb-0 score">Score:  @if($count ==  0) {{$score}} @else __ @endif / {{ $count_total_question }} </p>
+                                    @endif
                                 </div>
-                                <button type="button" class="add-question-trigger mt-2 btn btn-primary rounded-1 px-5" style="width: fit-content; float: right" data-bs-toggle="modal" data-bs-target="#questionModal"> Add </button>
+                                @if(Auth::user()->hasRole('teacher'))
+                                    <button type="button" class="add-question-trigger mt-2 btn btn-primary rounded-1 px-5" style="width: fit-content; float: right" data-bs-toggle="modal" data-bs-target="#questionModal"> Add </button>
+                                @endif
                             </div>
                      
                         </div>
-                        
-                        
+   
                         <!-- display question -->
+                        <input type="hidden" id="quiz-id" value="{{ $quiz_id }}">
                        
                         <div class="display_questions">
-                           
+                        @foreach($questions as $question)
+                            <div class="card mh-10 questions-wrapper" >
+                                <div class="card-body d-flex flex-column justify-content-center">
+                               
+                                    <div class="input-fields">
+                                        
+                                        <ul id="save_errlist"> </ul>
+                                        <div class="field__input relative question_content">
+                                                                                        
+                                            <input disabled type="text" class="w-full border-0" id="question_display" value="{{ $question->question }}"> 
+                                            
+                                            @if(Auth::user()->hasRole('teacher'))
+                                                <div class="d-flex">
+                                                    <button class="btn btn-primary mx-2 edit-question" value=" {{ $question->id }} "> Edit </button>
+                                                    <button class="btn btn-danger delete-question" value=" {{ $question->id }} "> Delete </button>
+                                                </div>
+                                            @endif
+                                        </div>
+                                                                    
+                                        <!-- choices teacher-->
+                                        <div class="choices-display__wrapper pt-4">
+                                        
+                                                <div class="field__input relative d-flex items-center">
+                                                    <input @if(Auth::user()->hasRole('teacher'))) disabled @endif value=" {{ $question->option_1 }} " @if($question->option_1 == $question->key_answer &&  Auth::user()->hasRole('teacher')) checked @endif type="radio" name="{{ $question->id }}" id="option_1_display" class="option_1_display option_display mr-2" placeholder="Option 1">
+                                                    <label for="{{ $question->id }}"> {{ $question->option_1 }}  </label>
+                                                </div>
+                                                
+                                                <div class="field__input relative d-flex items-center">
+                                                    <input @if(Auth::user()->hasRole('teacher'))) disabled @endif value=" {{ $question->option_2 }} " @if($question->option_2 == $question->key_answer  &&  Auth::user()->hasRole('teacher')) checked @endif type="radio" name="{{ $question->id }}" id="option_2_display" class="option_2_display option_display mr-2" placeholder="Option 2">
+                                                    <label for="{{ $question->id }}">  {{ $question->option_2 }}  </label>
+                                                </div>
+                                                
+                                                <div class="field__input relative d-flex items-center">
+                                                    <input @if(Auth::user()->hasRole('teacher'))) disabled @endif value=" {{ $question->option_3 }} " @if($question->option_3 == $question->key_answer  &&  Auth::user()->hasRole('teacher')) checked @endif type="radio" name="{{ $question->id }}" id="option_3_display" class="option_3_display option_display mr-2" placeholder="Option 3">
+                                                    <label for="{{ $question->id }}">  {{ $question->option_3 }}  </label>
+                                                </div>
+                                                
+                                                <div class="field__input relative d-flex items-center">
+                                                    <input @if(Auth::user()->hasRole('teacher'))) disabled @endif value=" {{ $question->option_4 }} " @if($question->option_4 == $question->key_answer  &&  Auth::user()->hasRole('teacher')) checked @endif type="radio" name="{{ $question->id }}" id="option_4_display" class="option_4_display option_display mr-2" placeholder="Option 4">
+                                                    <label for="{{ $question->id }}">  {{ $question->option_4 }}  </label>
+                                                </div>
+                                                
+                                                @if(Auth::user()->hasRole('student')) 
+                                                <button type="submit" class="btn btn-primary mt-2 submit-answer" data-id="{{ $question->id }}"> Submit </button> 
+                                                @endif 
+                                        </div>
+                                        <!-- end- choices teacher -->
+
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                        
+                        
+                        @if(Auth::user()->hasRole('student')) 
+                            @if($count == 0)
+                                @foreach($answered_questions as $answered_question)
+                                    <div class="card mh-10 questions-wrapper" >
+                                        <div class="card-body d-flex flex-column justify-content-center">
+                                    
+                                            <div class="input-fields">
+                                                
+                                                <ul id="save_errlist"> </ul>
+                                                <div class="field__input relative question_content">
+                                                                                                
+                                                    <input disabled type="text" class="w-full border-0" id="question_display" value="{{ $answered_question->question }}"> 
+                                                    
+                                                    @if(Auth::user()->hasRole('teacher'))
+                                                        <div class="d-flex">
+                                                            <button class="btn btn-primary mx-2 edit-question" value=" {{ $answered_question->id }} "> Edit </button>
+                                                            <button class="btn btn-danger delete-question" value=" {{ $answered_question->id }} "> Delete </button>
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                                                            
+                                                <!-- choices teacher-->
+                                                <div class="choices-display__wrapper pt-4">
+                                                
+                                                        <div class="field__input relative d-flex items-center">
+                                                            <input disabled value=" {{ $answered_question->option_1 }} " @if($answered_question->option_1 == $answered_question->key_answer) checked @endif type="radio" name="{{ $answered_question->id }}" id="option_1_display" class="option_1_display option_display mr-2" placeholder="Option 1">
+                                                            <label for="{{ $answered_question->id }}"> {{ $answered_question->option_1 }}  </label>
+                                                        </div>
+                                                        
+                                                        <div class="field__input relative d-flex items-center">
+                                                            <input disabled value=" {{ $answered_question->option_2 }} " @if($answered_question->option_2 == $answered_question->key_answer ) checked @endif type="radio" name="{{ $answered_question->id }}" id="option_2_display" class="option_2_display option_display mr-2" placeholder="Option 2">
+                                                            <label for="{{ $answered_question->id }}">  {{ $answered_question->option_2 }}  </label>
+                                                        </div>
+                                                        
+                                                        <div class="field__input relative d-flex items-center">
+                                                            <input disabled value=" {{ $answered_question->option_3 }} " @if($answered_question->option_3 == $answered_question->key_answer ) checked @endif type="radio" name="{{ $answered_question->id }}" id="option_3_display" class="option_3_display option_display mr-2" placeholder="Option 3">
+                                                            <label for="{{ $answered_question->id }}">  {{ $answered_question->option_3 }}  </label>
+                                                        </div>
+                                                        
+                                                        <div class="field__input relative d-flex items-center">
+                                                            <input disabled value=" {{ $answered_question->option_4 }} " @if($answered_question->option_4 == $answered_question->key_answer ) checked @endif type="radio" name="{{ $answered_question->id }}" id="option_4_display" class="option_4_display option_display mr-2" placeholder="Option 4">
+                                                            <label for="{{ $answered_question->id }}">  {{ $answered_question->option_4 }}  </label>
+                                                        </div>
+                                                
+                                                </div>
+                                                
+                                                @foreach($answered_question->responses as $response)
+                                                    <div class="mt-2 p-3 text-white fw-bold rounded-2 @if($response->answer == $answered_question->key_answer) bg-success @else bg-danger @endif    ">Your answer:  {{ $response->answer }} </div>
+                                                @endforeach
+                                                <!-- end- choices teacher -->
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endforeach
+                            @endif
+                        @endif
                         </div>
                            
                         <!-- end- display questions -->
@@ -64,8 +176,9 @@
                                 
                                 <ul id="save_errlist"></ul>
                                 <!-- input fields -->
+                                <input type="hidden" name="quiz_id" id="save_quiz_id" value="{{$quiz_id}}">
+                                
                                 <div class="input-fields">
-                                    
                                     <!-- question -->
                                     <div class="field__input relative mt-2">
                                         <input type="text" name="question" id="question" class="w-full input" placeholder="Type your question...">
@@ -79,6 +192,7 @@
                                             <div class="circle"> </div>
                                             <input type="text" name="option_1" id="option_1" class="w-full input" placeholder="Option 1">
                                         </div>
+                                        
                                         
                                         <div class="field__input relative d-flex items-center">
                                             <div class="circle"> </div>
@@ -127,7 +241,7 @@
     </div>
     <!-- end- create modal -->
     
-    <!-- edit modal -->
+     <!-- edit modal -->
     <div class="modal fade" id="questionEditModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -137,20 +251,19 @@
                 </div>
                 <div class="modal-body">
                     
-                                                
-                        <input type="hidden" id="edit_question_id"> 
-
+                
                         <!-- question -->
-                        <div class="card border-0 mh-10 questions-wrapper">
+                        <div class="card border-0 mh-10 edit-questions-wrapper">
                             <div class="card-body d-flex flex-column justify-content-center">
-                           
-                                <ul id="edit_errlist"></ul>
+                                
+                                <ul id="save_errlist"></ul>
                                 <!-- input fields -->
+                                <input type="hidden" name="quiz_id" id="save_quiz_id" value="{{$quiz_id}}">
+                                
                                 <div class="input-fields">
-                                    
                                     <!-- question -->
                                     <div class="field__input relative mt-2">
-                                        <input type="text" name="question" id="edit_question" class="w-full input" placeholder="Type your question...">
+                                        <input type="text" name="question" id="e-question" class="w-full input" placeholder="Type your question...">
                                     </div>
                                     <!-- end- question -->
                                     
@@ -159,31 +272,31 @@
                                     
                                         <div class="field__input relative d-flex items-center">
                                             <div class="circle"> </div>
-                                            <input type="text" name="option_1" id="edit_option_1" class="w-full input" placeholder="Option 1">
+                                            <input type="text" name="option_1" id="e-option_1" class="w-full input" placeholder="Option 1">
+                                        </div>
+                                        
+                                        
+                                        <div class="field__input relative d-flex items-center">
+                                            <div class="circle"> </div>
+                                            <input type="text" name="option_2" id="e-option_2" class="w-full input" placeholder="Option 2">
                                         </div>
                                         
                                         <div class="field__input relative d-flex items-center">
                                             <div class="circle"> </div>
-                                            <input type="text" name="option_2" id="edit_option_2" class="w-full input" placeholder="Option 2">
+                                            <input type="text" name="option_3" id="e-option_3" class="w-full input" placeholder="Option 3">
                                         </div>
                                         
                                         <div class="field__input relative d-flex items-center">
                                             <div class="circle"> </div>
-                                            <input type="text" name="option_3" id="edit_option_3" class="w-full input" placeholder="Option 3">
+                                            <input type="text" name="option_4" id="e-option_4" class="w-full input" placeholder="Option 4">
                                         </div>
                                         
                                         <div class="field__input relative d-flex items-center">
-                                            <div class="circle"> </div>
-                                            <input type="text" name="option_4" id="edit_option_4" class="w-full input" placeholder="Option 4">
-                                        </div>
-                                        
-                                        <div class="field__input relative d-flex items-center">
-                                            <select name="key_answer" id="edit_key_answer" class="w-full input edit_key_answer">
-                                                <option selected="selected">--Select Answer--</option>
-                                                <option class="edit_key_answer_1" id="edit_key_answer_1"></option>
-                                                <option class="edit_key_answer_2" id="edit_key_answer_2"></option>
-                                                <option class="edit_key_answer_3" id="edit_key_answer_3"></option>
-                                                <option class="edit_key_answer_4" id="edit_key_answer_4"></option>
+                                            <select name="e-key_answer" id="e-key_answer" class="w-full input">
+                                                <option id="e-key_answer_1" value=""></option>
+                                                <option id="e-key_answer_2" value=""></option>
+                                                <option id="e-key_answer_3" value=""></option>
+                                                <option id="e-key_answer_4" value=""></option>
                                             </select>
                                         </div>
                                         
@@ -208,7 +321,6 @@
         </div>
     </div>
     <!-- end- edit modal -->
-    
     
     <!-- delete confirmation modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="accountModalLabel" aria-hidden="true">
@@ -236,333 +348,72 @@
     
 @section('scripts')
 
-<script>     
+<script>   
+    // get current data
+    var date = new Date();
+	var current_date = date.getFullYear()+"-"+(date.getMonth()+1)+"-"+ date.getDate();
     
-     // add modal fields select
-    $(document).on('focusout', '#option_1' , function (e) {
-        e.preventDefault();
-        var option_1 = $('#option_1').val();
-        $('#key_answer_1').val('');
-        $('#key_answer_1').html('');
-        $('#key_answer_1').val(option_1);
-        $('#key_answer_1').append(option_1);
-    });
+    var deadline = $('.quiz-deadline').html();
+    deadline = deadline.replace('Deadline:', '');
     
-    $(document).on('focusout', '#option_2' , function (e) {
-        e.preventDefault();
-        var option_2 = $('#option_2').val();
-        $('#key_answer_2').val('');
-        $('#key_answer_2').html('');
-        $('#key_answer_2').val(option_2);
-        $('#key_answer_2').append(option_2);
-    });
+    if(current_date < deadline) { 
+        console.log($('.choices-display__wrapper input'));
+        $('.choices-display__wrapper input').attr('disabled','disabled');
+        $('.submit-answer').hide();
+        $('.quiz-deadline').addClass('text-danger');
+    }
     
-    $(document).on('focusout', '#option_3' , function (e) {
-        e.preventDefault();
-        var option_3 = $('#option_3').val();
-        $('#key_answer_3').val('');
-        $('#key_answer_3').html('');
-        $('#key_answer_3').val(option_3);
-        $('#key_answer_3').append(option_3);
-    });
-    
-    $(document).on('focusout', '#option_4' , function (e) {
-        e.preventDefault();
-        var option_4 = $('#option_4').val();
-        $('#key_answer_4').val('');
-        $('#key_answer_4').html('');
-        $('#key_answer_4').val(option_4);
-        $('#key_answer_4').append(option_4);
-    });
-    
-    
-    
-    // edit modal fields select
-    $(document).on('focusout', '#edit_option_1' , function (e) {
-        e.preventDefault();
-        var edit_option_1 = $('#edit_option_1').val();
-        $('#edit_key_answer_1').val('');
-        $('#edit_key_answer_1').html('');
-        $('#edit_key_answer_1').val(edit_option_1);
-        $('#edit_key_answer_1').append(edit_option_1);
-    });
-    
-    $(document).on('focusout', '#edit_option_2' , function (e) {
-        e.preventDefault();
-        var edit_option_2 = $('#edit_option_2').val();
-        $('#edit_key_answer_2').val('');
-        $('#edit_key_answer_2').html('');
-        $('#edit_key_answer_2').val(edit_option_2);
-        $('#edit_key_answer_2').append(edit_option_2);
-    });
-    
-    $(document).on('focusout', '#edit_option_3' , function (e) {
-        e.preventDefault();
-        var edit_option_3 = $('#edit_option_3').val();
-        $('#edit_key_answer_3').val('');
-        $('#edit_key_answer_3').html('');
-        $('#edit_key_answer_3').val(edit_option_3);
-        $('#edit_key_answer_3').append(edit_option_3);
-    });
-    
-    $(document).on('focusout', '#edit_option_4' , function (e) {
-        e.preventDefault();
-        var edit_option_4 = $('#edit_option_4').val();
-        $('#edit_key_answer_4').val('');
-        $('#edit_key_answer_4').html('');
-        $('#edit_key_answer_4').val(edit_option_4);
-        $('#edit_key_answer_4').append(edit_option_4);
-    });
-    
-    
-    // show 
-    fetchQuestion();
-    
+
+    fetchQuestion()
     function fetchQuestion() { 
-    
-        var url = '{{ route("questions.index") }}';
-        var data = {
-            'quiz_id': $('#quiz_id').val(),
-        }
+        var quiz_id = $('#quiz-id').val();
+        
+        var url = '{{ route("quizzes.show", ":id") }}'
+        url = url.replace(':id', quiz_id);
         
         $.ajax({
             type: "GET",
             url: url,
-            data: data,
             dataType: "json",
             success: function (response) {
-                console.log(response);
                 
-                $('.display_questions').html("");
-                if (response.questions.length > 0) {
-                    $.each(response.questions, function (key, question) { 
-                                                                 
-                        $('.display_questions').append(
-                            '<div class="card mh-10 questions-wrapper">'+
-                            '<div class="card-body d-flex flex-column justify-content-center">'+
-                            '<div class="input-fields">'+
-                                
-                                // '<ul id="save_errlist"> </ul>'+
-                                
-                                '<div class="field__input relative question_content">'+
-                                    
-                                    '<div class="w-full">'+ question.question +'</div>'+
-                                    
-                                    '<div>'+
-                                        '<button class="btn btn-primary mx-2 edit-question" value="'+ question.id +'"> Edit </button>'+
-                                        '<button class="btn btn-danger delete-question" value="'+ question.id +'"> Delete </button>'+
-                                    '</div>'+
-                                '</div>'+
-                
-                                                            
-                                '<!-- choices teacher-->'+
-                                '<div class="choices-display__wrapper pt-4">'+
-                                
-                                        '<div class="field__input relative d-flex items-center">'+
-                                            '<input disabled value="'+ question.option_1 +'" type="radio" name="'+ question.id +'" id="option_1_display" class="option_1_display option_display mr-2" placeholder="Option 1">'+
-                                            '<label for="'+ question.id +'"> '+ question.option_1 +' </label>'+
-                                        '</div>'+
-                                        
-                                        '<div class="field__input relative d-flex items-center">'+
-                                            '<input disabled value="'+ question.option_2 +'" type="radio" name="'+ question.id +'" id="option_2_display" class="option_2_display option_display mr-2" placeholder="Option 2">'+
-                                            '<label for="'+ question.id +'"> '+ question.option_2 +' </label>'+
-                                        '</div>'+
-                                        
-                                        '<div class="field__input relative d-flex items-center">'+
-                                            '<input disabled value="'+ question.option_3 +'" type="radio" name="'+ question.id +'" id="option_3_display" class="option_3_display option_display mr-2" placeholder="Option 3">'+
-                                            '<label for="'+ question.id +'"> '+ question.option_3 +' </label>'+
-                                        '</div>'+
-                                        
-                                        '<div class="field__input relative d-flex items-center">'+
-                                            '<input disabled value="'+ question.option_4 +'" type="radio" name="'+ question.id +'" id="option_4_display" class="option_4_display option_display mr-2" placeholder="Option 4">'+
-                                            '<label for="'+ question.id +'"> '+ question.option_4 +' </label>'+
-                                        '</div>'+
-                                        
-                                        '<button type="submit" class="btn btn-primary mt-2 submit-answer" data-id="'+ question.id +'"> Submit </button>' +
-                                        
-                                        '<div class="relative d-flex items-center justify-between">'+
-                                            '<p class="pt-4 mb-0 key_answer_t">Key answer: '+ question.key_answer +'</p>'+
-                                        '</div>'+
-                                '</div>'+
-                                '<!-- end- choices teacher -->'+
-                                
-                                
-                                
-                                
-                            '</div>'+
-                            '</div>'+
-                            '</div>'
-                        );
-                    
-                        if (response.role == 'student') {
-                            $('.add-question-trigger').hide();                            
-                            $('.key_answer_t').hide();                            
-                            $('.edit-question').hide();                            
-                            $('.delete-question').hide();      
-                            $('.option_1_display').removeAttr("disabled");     
-                            $('.option_2_display').removeAttr("disabled");     
-                            $('.option_3_display').removeAttr("disabled");     
-                            $('.option_4_display').removeAttr("disabled");     
-                        }
-                        else { 
-                            $('.key_answer_t').show();                        
-                            $('.edit-question').show();                            
-                            $('.delete-question').show();                            
-                            $('.submit-response').hide();     
-                            $('.submit-answer').hide();
-                        }
-                        
-                    });
-      
-                } 
-                else if (response.answered_questions.length > 0) {        
-                    var i = 0; 
-                    var score = 0; 
-                    $.each(response.answered_questions, function (key, answered_question) {
-                        $('.display_questions').append(
-                            '<div class="card mh-10 questions-wrapper">'+
-                            '<div class="card-body d-flex flex-column justify-content-center">'+
-                            '<div class="input-fields">'+
-                                
-                                // '<ul id="save_errlist"> </ul>'+
-                                
-                                '<div class="field__input relative question_content">'+
-                                    
-                                    '<div class="w-full">'+ answered_question.question +'</div>'+
-                                    
-                                    '<div>'+
-                                        '<button class="btn btn-primary mx-2 edit-question" value="'+ answered_question.id +'"> Edit </button>'+
-                                        '<button class="btn btn-danger delete-question" value="'+ answered_question.id +'"> Delete </button>'+
-                                    '</div>'+
-                                '</div>'+
-                
-                                                            
-                                '<!-- choices teacher-->'+
-                                '<div class="choices-display__wrapper pt-4">'+
-                                
-                                        '<div class="field__input relative d-flex items-center">'+
-                                            '<input disabled value="'+ answered_question.option_1 +'" type="radio" name="'+ answered_question.id +'" id="option_1_display" class="option_1_display option_display mr-2" placeholder="Option 1">'+
-                                            '<label for="'+ answered_question.id +'"> '+ answered_question.option_1 +' </label>'+
-                                        '</div>'+
-                                        
-                                        '<div class="field__input relative d-flex items-center">'+
-                                            '<input disabled value="'+ answered_question.option_2 +'" type="radio" name="'+ answered_question.id +'" id="option_2_display" class="option_2_display option_display mr-2" placeholder="Option 2">'+
-                                            '<label for="'+ answered_question.id +'"> '+ answered_question.option_2 +' </label>'+
-                                        '</div>'+
-                                        
-                                        '<div class="field__input relative d-flex items-center">'+
-                                            '<input disabled value="'+ answered_question.option_3 +'" type="radio" name="'+ answered_question.id +'" id="option_3_display" class="option_3_display option_display mr-2" placeholder="Option 3">'+
-                                            '<label for="'+ answered_question.id +'"> '+ answered_question.option_3 +' </label>'+
-                                        '</div>'+
-                                        
-                                        '<div class="field__input relative d-flex items-center">'+
-                                            '<input disabled value="'+ answered_question.option_4 +'" type="radio" name="'+ answered_question.id +'" id="option_4_display" class="option_4_display option_display mr-2" placeholder="Option 4">'+
-                                            '<label for="'+ answered_question.id +'"> '+ answered_question.option_4 +' </label>'+
-                                        '</div>'+
-                                        
-                                        '<div class="relative d-flex items-center justify-between">'+
-                                            '<p class="pt-4 mb-0">Answer: '+ answered_question.responses[0].answer +'</p>'+
-                                            '<p class="pt-4 mb-0">Key answer: '+ answered_question.key_answer +'</p>'+
-                                        '</div>'+
-                                        
-                                '</div>'+
-                                '<!-- end- choices teacher -->'+
-                                
-                            '</div>'+
-                            '</div>'+
-                            '</div>'
-                        );
-                        
-                        if (response.role == 'student') {
-                            $('.add-question-trigger').hide();                            
-                            $('.key_answer_display').hide();                            
-                            $('.edit-question').hide();                            
-                            $('.delete-question').hide();      
-                            $('.key_answer_t').hide();      
-                        }
-                        else { 
-                            $('.key_answer_display').show();                        
-                            $('.edit-question').show();                            
-                            $('.delete-question').show();                            
-                            $('.key_answer_t').show();      
-                            $('.submit-response').hide();     
-                            $('.submit-answer').hide();
-                        }
-                        
-                        if(answered_question.responses[0].answer === answered_question.key_answer) { 
-                            score++; 
-                        }
-                        
-                    });
-                    
-                    $('.score').html('Score: '+score+ ' / ' +response.count_total_question);
-                    if (response.count == 0 && response.result_existance == 0) {
-                    // here
-                        var data = {
-                            'score': score,
-                            'quiz_id': $('#quiz_id').val(),
-                        }
-                        console.log('score: ', score, 'data', data);  
-                        var url = '{{ route("store-result") }}';
-                
-                        $.ajaxSetup({
-                            headers: {
-                                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                            }
-                        });
-                        
-                        $.ajax({
-                            type: "POST",
-                            url: url, 
-                            data: data,
-                            dataType: "json",
-                            success: function (response) {
-                                console.log(response);
-                            
-                                if(response.status == 400) { 
-                                
-                                    $('#save_errlist').html("");
-                                    $('#save_errlist').addClass("alert alert-danger");
-                                    $.each(response.errors, function (key, error_values) { 
-                                        $('#save_errlist').append('<li>'+ error_values +'</li>')
-                                    });
-                                    
-                                } else { 
-                                
-                                    fetchQuestion();
-                                }
-                            }
-                        });
+                if (response.count == 0 && response.result_existance == 0) {
+                    var data = {
+                        'score': response.score,
+                        'quiz_id': quiz_id,
                     }
-                                        
-                }
-                else { 
+                    console.log('score: ', response.score, 'data', data);  
+                    var url = '{{ route("store-result") }}';
+
+                    $.ajaxSetup({
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        }
+                    });
                     
-                    $('.quiz-list').append('<div class="no-data"> No data Found </div>');
-                    
+                    $.ajax({
+                        type: "POST",
+                        url: url, 
+                        data: data,
+                        dataType: "json",
+                        success: function (response) {
+                            console.log(response);
+                        
+                            if(response.status == 400) { 
+                            
+                                $('#save_errlist').html("");
+                                $('#save_errlist').addClass("alert alert-danger");
+                                $.each(response.errors, function (key, error_values) { 
+                                    $('#save_errlist').append('<li>'+ error_values +'</li>')
+                                });
+                                
+                            } else { 
+                            
+                                fetchQuestion();
+                            }
+                        }
+                    });
                 }
-                
-                
-                if (response.role == 'student') { 
-                    $('.add-question-trigger').hide();
-                }
-                
-                $('.quiz-name').html("");
-                $('.quiz-instruction').html("");
-                $('.quiz-deadline').html("");
-                $('.date-uploaded').html("");
-                
-                $.each(response.quiz, function (key, quiz) { 
-                    var created_at = new Date(quiz.created_at);
-                    var created_at_formated = created_at.toString('dd-MMM-yyyy');
-                    var deadline = new Date(quiz.deadline); 
-                    var deadline_formated = deadline.toString('dd-MMM-yyyy');
-                
-                    $('.quiz-name').append(quiz.quiz_name);
-                    $('.quiz-instruction').append(quiz.instruction);
-                    $('.quiz-deadline').append("Deadline: ",deadline_formated);
-                    $('.date-uploaded').append("Date Uploaded: ",created_at_formated);
-                });
                 
             }
         });
@@ -592,8 +443,7 @@
             data: data,
             dataType: "json",
             success: function (response) {
-                console.log(response);
-            
+                
                 if(response.status == 400) { 
                 
                     $('#save_errlist').html("");
@@ -603,11 +453,25 @@
                     });
                     
                 } else { 
-                
-                    fetchQuestion();
+                       
+                    window.location.reload(); 
                 }
             }
         });
+    });
+    
+    // adding key answers data
+    $(document).on('focusout','.questions-wrapper input', function (e) {
+        e.preventDefault();
+        $('#key_answer_1').val($('#option_1').val());
+        $('#key_answer_2').val($('#option_2').val());
+        $('#key_answer_3').val($('#option_3').val());
+        $('#key_answer_4').val($('#option_4').val());
+
+        $('#key_answer_1').html($('#option_1').val());
+        $('#key_answer_2').html($('#option_2').val());
+        $('#key_answer_3').html($('#option_3').val());
+        $('#key_answer_4').html($('#option_4').val());
     });
     
     // store
@@ -620,9 +484,9 @@
             'option_3': $('#option_3').val(),
             'option_4': $('#option_4').val(),
             'key_answer': $('#key_answer').val(),
-            'quiz_id': $('#quiz_id').val(),
+            'quiz_id': $('#save_quiz_id').val(),
         }
-        
+                
         var url = '{{ route("questions.store") }}';
                 
         $.ajaxSetup({
@@ -647,8 +511,6 @@
                     
                 } else { 
                     $('#questionModal').modal('hide');
-                    clearFields();
-                    fetchQuestion();
                     Swal.fire(
                         'Good job!',
                         response.message,
@@ -660,86 +522,100 @@
         
     });
     
-    
-    // edit
-    $(document).on('click', '.edit-question', function (e) {
+    //edit
+    var question_id;
+    $(document).on('click', '.edit-question' , function (e) {
         e.preventDefault();
-    
-        var question_id = $(this).val();
-        var url = '{{ route("questions.edit", ":id") }}';
-        url = url.replace(':id', question_id);
-        
         $('#questionEditModal').modal('show');
-    
+        
+        question_id = $(this).val(); 
+        var url = "{{ route('questions.edit', ':id') }}";
+        url = url.replace(':id', question_id) ;
+      
+        var data = {
+            'id': $(this).val(),
+        } 
+        
         $.ajax({
             type: "GET",
             url: url,
             success: function (response) {
+                console.log(response);
                 if (response.status == 404) {
-                
                     Swal.fire({
                         icon: 'error',
                         title: 'Oops...',
                         text: response.message
                     });
-                    
                 } else { 
+                    $('#e-question').val(response.question.question);
+                    $('#e-option_1').val(response.question.option_1);
+                    $('#e-option_2').val(response.question.option_2);
+                    $('#e-option_3').val(response.question.option_3);
+                    $('#e-option_4').val(response.question.option_4);
+                                        
+                   
                     
-                    $('#edit_question').val(response.question.question);
-                    $('#edit_option_1').val(response.question.option_1);
-                    $('#edit_option_2').val(response.question.option_2);
-                    $('#edit_option_3').val(response.question.option_3);
-                    $('#edit_option_4').val(response.question.option_4);
-                    $('#edit_question_id').val(response.question.id);     
+                    $('#e-key_answer_1').val($('#e-option_1').val());
+                    $('#e-key_answer_2').val($('#e-option_2').val());
+                    $('#e-key_answer_3').val($('#e-option_3').val());
+                    $('#e-key_answer_4').val($('#e-option_4').val());
                     
+                    $('#e-key_answer_1').html($('#e-option_1').val());
+                    $('#e-key_answer_2').html($('#e-option_2').val());
+                    $('#e-key_answer_3').html($('#e-option_3').val());
+                    $('#e-key_answer_4').html($('#e-option_4').val());
                     
-                    $('#edit_key_answer_1').val('');
-                    $('#edit_key_answer_2').val('');
-                    $('#edit_key_answer_3').val('');
-                    $('#edit_key_answer_4').val('');
+                    if ($('#e-key_answer_1').val() == response.question.key_answer ) {
+                        $('#e-key_answer_1').attr("selected","selected");
+                    }
+                    if ($('#e-key_answer_2').val() == response.question.key_answer ) {
+                        $('#e-key_answer_2').attr("selected","selected");
+                    }
+                    if ($('#e-key_answer_3').val() == response.question.key_answer ) {
+                        $('#e-key_answer_3').attr("selected","selected");
+                    }
+                    if ($('#e-key_answer_4').val() == response.question.key_answer ) {
+                        $('#e-key_answer_4').attr("selected","selected");
+                    }
                     
-                    $('#edit_key_answer_1').html('');
-                    $('#edit_key_answer_2').html('');
-                    $('#edit_key_answer_3').html('');
-                    $('#edit_key_answer_4').html('');
-                    
-                    $('#edit_key_answer_1').val(response.question.option_1);
-                    $('#edit_key_answer_2').val(response.question.option_2);
-                    $('#edit_key_answer_3').val(response.question.option_3);
-                    $('#edit_key_answer_4').val(response.question.option_4);
-                    
-                    $('#edit_key_answer_1').append(response.question.option_1);
-                    $('#edit_key_answer_2').append(response.question.option_2);
-                    $('#edit_key_answer_3').append(response.question.option_3);
-                    $('#edit_key_answer_4').append(response.question.option_4);
-                    
-                    
+                    $(document).on('focusout', '.edit-questions-wrapper input' , function () {
+                        $('#e-key_answer_1').val($('#e-option_1').val());
+                        $('#e-key_answer_2').val($('#e-option_2').val());
+                        $('#e-key_answer_3').val($('#e-option_3').val());
+                        $('#e-key_answer_4').val($('#e-option_4').val());
+                        
+                        $('#e-key_answer_1').html($('#e-option_1').val());
+                        $('#e-key_answer_2').html($('#e-option_2').val());
+                        $('#e-key_answer_3').html($('#e-option_3').val());
+                        $('#e-key_answer_4').html($('#e-option_4').val());
+                    });
+
                 }
                 
             }
         });
         
     });
+   
     
     // update
     $(document).on('click', '.update-question', function (e) {
         e.preventDefault();
         
-        
-        var question_id = $('#edit_question_id').val();
         var url = '{{ route("questions.update", ":id") }}';
         url = url.replace(':id', question_id);
         
         var data = {
-            'question': $('#edit_question').val(),
-            'option_1': $('#edit_option_1').val(),
-            'option_2': $('#edit_option_2').val(),
-            'option_3': $('#edit_option_3').val(),
-            'option_4': $('#edit_option_4').val(),
-            'key_answer': $('#edit_key_answer').val(),
-            'quiz_id': $('#quiz_id').val(),
+            'question': $('#e-question').val(),
+            'option_1': $('#e-option_1').val(),
+            'option_2': $('#e-option_2').val(),
+            'option_3': $('#e-option_3').val(),
+            'option_4': $('#e-option_4').val(),
+            'key_answer': $('#e-key_answer').children("option:selected").val(),
         }
         
+        console.log($('#e-key_answer'));
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -778,7 +654,6 @@
                     $('#questionEditModal').modal('hide');
                     $('#questionEditModal').find('input').val("");
                     
-                    fetchQuestion();
                     Swal.fire(
                         'Good job!',
                         response.message,
@@ -822,7 +697,6 @@
             success: function (response) {
     
                 $('#deleteModal').modal('hide');
-                fetchQuestion();
                 Swal.fire(
                     'Deleted!',
                     response.message,
@@ -830,45 +704,7 @@
                 )
             }
         });
-    });
-    
-    
-    // other function
-    function clearFields() { 
-        $('#questionModal').find('input').val("");
-        $('#save_errlist').html("");
-        $('#save_errlist').removeClass("alert alert-danger");
-        $('#key_answer_1').val('');
-        $('#key_answer_1').html('');
-        $('#key_answer_2').val('');
-        $('#key_answer_2').html('');
-        $('#key_answer_3').val('');
-        $('#key_answer_3').html('');
-        $('#key_answer_4').val('');
-        $('#key_answer_4').html('');
-        $('#selected').attr('selected');
-        
-        
-        $('#edit_key_answer_1').val('');
-        $('#edit_key_answer_1').html('');
-        $('#edit_key_answer_2').val('');
-        $('#edit_key_answer_2').html('');
-        $('#edit_key_answer_3').val('');
-        $('#edit_key_answer_3').html('');
-        $('#edit_key_answer_4').val('');
-        $('#edit_key_answer_4').html('');
-    }
-
-    $(document).on('click', '.btn-close', function (e) {
-        e.preventDefault();
-        clearFields();
-    });
-    
-    $(document).on('click', '.close-modal', function (e) {
-        e.preventDefault();
-        clearFields();
-    });
-    
+    });    
     
 </script>
 

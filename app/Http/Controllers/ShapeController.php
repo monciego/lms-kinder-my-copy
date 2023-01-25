@@ -8,6 +8,7 @@ use App\Models\Quiz;
 use App\Models\Question;
 use App\Models\Response;
 use App\Models\Shape;
+use App\Models\ShapeResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Validator;
@@ -37,6 +38,7 @@ class ShapeController extends Controller
         }
         else { 
             $role = 'student';
+                        
             $shapes = Shape::all();
         }
         
@@ -106,6 +108,100 @@ class ShapeController extends Controller
             ]);
         }
     }
+    
+    public function storeResponses(Request $request) 
+    { 
+        
+            
+        $user_id = Auth::id();
+        
+        $shape_response = new ShapeResponse;
+        $shape_response->image_response =  $request->input('image_response');
+    
+        $shape_response->user()->associate($user_id);
+        $shape_response->shape()->associate($request->input('shape_id'));
+        $shape_response->save();
+        
+        return response()->json([ 
+            'status'=>200, 
+            'image_response'=> $request->input('image_response'), 
+            'message'=>'Shape Created Successfully',
+        ]);
+    
+    }
+    
+    public function shapeResponses($id) 
+    { 
+    
+        $student_responses = ShapeResponse::where('shape_id', $id)
+        ->with('user')
+        ->with('shape')
+        ->get(); 
+        
+        return view('shape-responses', [ 'student_responses'=>$student_responses ] );
+        
+    }
+
+    public function showShapeResponses($id, $user_id)
+    { 
+    
+        $shape_responses = ShapeResponse::where('shape_id', $id)
+        ->where('user_id', $user_id)
+        ->with('user')
+        ->with('shape')
+        ->get();
+        
+        return view('show-shape-responses', ['shape_responses'=>$shape_responses] );
+        
+    }
+    
+    public function returnShapeScore($id)
+    { 
+    
+        $shape_response = ShapeResponse::find($id);
+        
+        if ($shape_response) {
+            return response()->json([ 
+                'status'=>200, 
+                'shape_response'=>$shape_response,
+            ]);
+        }
+        else { 
+            return response()->json([ 
+                'status'=>404, 
+                'message'=>'Grade Not Found',
+            ]);
+        }
+      
+    }
+    
+    public function updateShapeScore(Request $request, $id)
+    { 
+        $validator = Validator::make($request->all(), [
+            'score' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+        
+            return response()->json([
+                'status'=>400, 
+                'errors'=>$validator->messages(),
+            ]);
+            
+        }
+        else { 
+                        
+            $shape_response = ShapeResponse::find($id);
+            $shape_response->score = $request->input('score');
+                        
+            $shape_response->save();
+            
+            return response()->json([ 
+                'status'=>200, 
+                'message'=>'Score Updated Successfully',
+            ]);
+        }
+    }
 
     /**
      * Display the specified resource.
@@ -122,14 +218,24 @@ class ShapeController extends Controller
         else { 
             $role = "student"; 
         }
-    
         $shapes = Shape::find($id);
+        
+        
+        $shapes_with_response = ShapeResponse::where('shape_id',$id)
+        ->where('user_id', Auth::id())
+        ->with(['user' => function ($q) { 
+            $q->where("id", Auth::id());
+        }])->get();
+        
+        // count shapes with response existance
+        $existance = count($shapes_with_response); 
         
         if ($request->ajax()) {
             return response()->json([
                 'shapes'=>$shapes,
                 'role'=>$role,
-                'message'=>'ypi sadsaw',
+                'shapes_with_response'=>$shapes_with_response,
+                'existance'=>$existance,
             ]);
         }
     

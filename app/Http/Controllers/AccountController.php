@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\Grade;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
@@ -20,16 +21,10 @@ class AccountController extends Controller
      */
     public function index()
     {
-        return view('account');
+        $users = User::all()->except(Auth::id());
+        return view('account', compact('users'));
     }
     
-    public function showAccounts()
-    { 
-        $users = User::all()->except(Auth::id());
-        return response()->json([ 
-            'users'=>$users,
-        ]);
-    }
     /**
      * Show the form for creating a new resource.
      *
@@ -68,17 +63,21 @@ class AccountController extends Controller
             ]);
             $user->attachRole($request->role_id); 
             
+            $user_id = $user->id;
+            
+            if ($user->hasRole('student')) {
+                $grade = Grade::create([
+                    'user_id' => $user_id,
+                    'grade' => 'n/a'
+                ]);
+            }
+            
             return response()->json([ 
                 'status'=>200, 
+                'status'=>$user_id, 
                 'message'=>'Account Created Successfully',
             ]);
         }
-
-
-        // Session::flash('success', 'Account added successfully');
-        
-        // return redirect()->route('accounts');
-        // return redirect(RouteServiceProvider::HOME);
     }
 
     /**
@@ -149,11 +148,13 @@ class AccountController extends Controller
                 $user->password = Hash::make($request->input('password'));
                 $user->save();
                 
-                return response()->json([ 
-                    'status'=>200, 
-                    'message'=>'Account Updated Successfully',
-                    'user'=>$user,
-                ]);
+                if ($request->ajax()) {
+                    return response()->json([ 
+                        'status'=>200, 
+                        'message'=>'Account Updated Successfully',
+                        'user'=>$user,
+                    ]);
+                }
                 
             }
             else { 

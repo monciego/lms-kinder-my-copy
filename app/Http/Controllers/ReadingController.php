@@ -2,8 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Reading;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Quiz;
+use App\Models\Question;
+use App\Models\Response;
+use App\Models\Result;
+use App\Models\Reading;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Database\Eloquent\Builder;
 
 class ReadingController extends Controller
 {
@@ -14,7 +23,22 @@ class ReadingController extends Controller
      */
     public function index()
     {
-        //
+        if (Auth::user()->hasRole('teacher')) {
+            $readings = Reading::where('user_id', Auth::id())->get();
+            
+            return view('reading' , [ 
+                'readings' => $readings
+            ]);
+        }
+        else { 
+            $readings = Reading::all();
+            
+            return view('reading' , [ 
+                'readings' => $readings
+            ]);
+        }    
+    
+    
     }
 
     /**
@@ -35,7 +59,38 @@ class ReadingController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'content' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+        
+            return response()->json([
+                'status'=>400, 
+                'errors'=>$validator->messages(),
+            ]);
+            
+        }
+        else { 
+            
+            $user_id = Auth::id();
+            
+            $reading = Reading::create([
+                'title' => $request->title,
+                'content' => $request->content,
+            ]);
+            
+            
+            
+            $reading->user()->associate($user_id);
+            $reading->save();
+            
+            return response()->json([ 
+                'status'=>200, 
+                'message'=>'Content Created Successfully',
+            ]);
+        }
     }
 
     /**
@@ -44,9 +99,14 @@ class ReadingController extends Controller
      * @param  \App\Models\Reading  $reading
      * @return \Illuminate\Http\Response
      */
-    public function show(Reading $reading)
+    public function show($id)
     {
-        //
+        
+        $reading = Reading::where('id', $id)->first();
+        
+        return response()->json([
+            "reading" => $reading,
+        ]);
     }
 
     /**
@@ -55,9 +115,24 @@ class ReadingController extends Controller
      * @param  \App\Models\Reading  $reading
      * @return \Illuminate\Http\Response
      */
-    public function edit(Reading $reading)
+    public function edit($id)
     {
-        //
+        $reading = Reading::find($id);
+        
+        if ($reading) {
+            return response()->json([ 
+                'status'=>200, 
+                'reading'=>$reading,
+            ]);
+        }
+        else { 
+            return response()->json([ 
+                'status'=>404, 
+                'reading'=>$reading, 
+                'id'=>$id,
+                'message'=>'Reading Not Found',
+            ]);
+        }
     }
 
     /**
@@ -67,9 +142,34 @@ class ReadingController extends Controller
      * @param  \App\Models\Reading  $reading
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Reading $reading)
+    public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'title' => 'required|string',
+            'content' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+        
+            return response()->json([
+                'status'=>400, 
+                'errors'=>$validator->messages(),
+            ]);
+            
+        }
+        else { 
+                        
+            $reading = Reading::find($id);
+            $reading->title = $request->input('title');
+            $reading->content = $request->input('content');
+                        
+            $reading->save();
+            
+            return response()->json([ 
+                'status'=>200, 
+                'message'=>'Content Updated Successfully',
+            ]);
+        }
     }
 
     /**
@@ -78,8 +178,14 @@ class ReadingController extends Controller
      * @param  \App\Models\Reading  $reading
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Reading $reading)
+    public function destroy($id)
     {
-        //
+        $reading = Reading::find($id);
+        $reading->delete();
+        return response()->json([ 
+            'status'=>200, 
+            'reading'=>$reading,
+            'message'=>'Reading content has been deleted.',
+        ]);
     }
 }

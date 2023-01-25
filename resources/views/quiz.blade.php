@@ -16,7 +16,9 @@
                      <div class="mb-4">
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
                             <h3 class="m-0 font-weight-bold text-primary fw-bold">Quizzes</h3>
-                            <button type="button" class="add-quiz-trigger btn btn-primary rounded-1 px-5" data-bs-toggle="modal" data-bs-target="#quizModal"> New </button>
+                            @if(Auth::user()->hasRole('teacher'))
+                                <button type="button" class="add-quiz-trigger btn btn-primary rounded-1 px-5" data-bs-toggle="modal" data-bs-target="#quizModal"> New </button>
+                            @endif
                         </div>
                             
                         <div id="success_message"> </div>
@@ -28,7 +30,6 @@
                                 
                                     <thead>
                                         <tr>
-                                            <th class="text-center">#</th>
                                             <th>Quiz</th>
                                             <th>Instruction</th>
                                             <th>Uploaded</th>
@@ -38,7 +39,24 @@
                                     </thead>
                                     
                                     <tbody class="quiz-list">
-                                        
+                                        @forelse ($quizzes as $quiz)
+                                            <tr>
+                                                <td> {{ $quiz->quiz_name }} </td>
+                                                <td> {{ $quiz->instruction }} </td>
+                                                <td> {{ Carbon\carbon::parse($quiz->created_at)->format('d/m/Y g:i A') }} </td> 
+                                                <td> {{ Carbon\carbon::parse($quiz->deadline)->format('d/m/Y g:i A') }} </td>
+                                                <td>
+                                                    <a href=" {{ route('quizzes.show', $quiz->id ) }} " class="show-question btn btn-success mt-2"> Show </a> 
+                                                    @if(Auth::user()->hasRole('teacher'))
+                                                    <a href=" {{ route('show-quiz-responses', $quiz->id) }} "value=" quiz.id " class="btn btn-secondary mt-2"> Responses </a> 
+                                                    <button type="button" value=" {{ $quiz->id }} " class="edit-quiz btn btn-primary mt-2"> Edit </button> 
+                                                    <button type="button" value=" {{ $quiz->id }} " class="delete-quiz btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#deleteModal"> Delete </button> 
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @empty 
+                                            <td>NO DATA FOUND</td>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -172,70 +190,6 @@
     
     $(document).ready(function () {
            
-        // show  
-        fetchQuiz();
-        function fetchQuiz() { 
-            $.ajax({
-                type: "GET",
-                url: "/activities/quizzes/show-quizzes",
-                dataType: "json",
-                success: function (response) {
-                    console.log(response);
-                    var count = 1; 
-                    $('.quiz-list').html("");
-                    
-                    if (response.quizzes.length > 0) {
-                        $.each(response.quizzes, function (key, quiz) { 
-                            var created_at = new Date(quiz.created_at);
-                            var created_at_formated = created_at.toString('dd-MMM-yyyy');
-                            var deadline = new Date(quiz.deadline); 
-                            var deadline_formated = deadline.toString('dd-MMM-yyyy');
-                            var url = '{{ route("quizzes.show", ":id") }}';
-                            url = url.replace(':id', quiz.id);
-                            
-                            var response_url = '{{ route("show-quiz-responses") }}';
-                           
-                            console.log(response_url ,'url' , url);
-                            
-                            $('.quiz-list').append(
-                                '<tr>'+
-                                    '<td class="text-center">'+ count++ +'</td>'+
-                                    '<td>'+ quiz.quiz_name +'</td>'+
-                                    '<td>'+ quiz.instruction +'</td>'+
-                                    '<td>'+ created_at_formated +'</td>'+
-                                    '<td>'+ deadline_formated +'</td>'+
-                                    '<td>'+
-                                        // '<a href="'+ response_url +'"value="'+ quiz.id +'" class="btn btn-secondary mt-2"> Responses </a> '+
-                                        '<a href="'+ url +'" class="show-question btn btn-success mt-2"> Show </a> '+
-                                        '<button type"button" value="'+ quiz.id +'" class="edit-quiz btn btn-primary mt-2"> Edit </button> '+
-                                        '<button type="button" value="'+ quiz.id +'" class="delete-quiz btn btn-danger mt-2" data-bs-toggle="modal" data-bs-target="#deleteModal"> Delete </button> '+
-                                    '</td>'+
-                                '</tr>'
-                            );
-                            
-                        });
-                    } else { 
-                        $('.quiz-list').append('<div class="no-data"> No data Found </div>')
-                    }
-                    
-                    if (response.role == "teacher") {
-                        $(".add-quiz-trigger").show();
-                        $(".edit-quiz").show();
-                        $(".delete-quiz").show();
-                      
-                        
-                    }
-                    else { 
-                        $(".add-quiz-trigger").hide();
-                        $(".edit-quiz").hide();
-                        $(".delete-quiz").hide();
-                    
-                    }
-                    
-                }
-            });
-        }
-        
         // store
         $(document).on('click','.save-quiz', function(e) { 
             e.preventDefault();
@@ -246,9 +200,7 @@
             'deadline': $('#deadline').val(),
             'category': 'quiz',
             }
-            
-            console.log(data);
-            
+                        
             $.ajaxSetup({
                 headers: {
                     'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -273,7 +225,6 @@
                         $('#quizModal').modal('hide');
                         $('#quizModal').find('input').val("");
                         
-                        fetchQuiz();
                         Swal.fire(
                             'Good job!',
                             response.message,
@@ -375,7 +326,6 @@
                         $('#quizEditModal').modal('hide');
                         $('#quizEditModal').find('input').val("");
                         
-                        fetchQuiz();
                         Swal.fire(
                             'Good job!',
                             response.message,
@@ -407,7 +357,7 @@
                 success: function (response) {
         
                     $('#deleteModal').modal('hide');
-                    fetchQuiz();
+                    
                     Swal.fire(
                         'Deleted!',
                         response.message,
