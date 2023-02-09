@@ -42,14 +42,17 @@
                                
                                     <div class="input-fields">
                                         
-                                        <ul id="save_errlist"> </ul>
+                                        <div class="image-wrapper m-auto" style="width: 40%; aspect-ratio: 1/1; object-fit: contain">
+                                            <img src="{{ asset('uploads/quiz/' .$question->image ) }}" class="d-block">
+                                        </div>
+                                        
                                         <div class="field__input relative question_content">
                                                                                         
                                             <input disabled type="text" class="w-full border-0" id="question_display" value="{{ $question->question }}"> 
                                             
                                             @if(Auth::user()->hasRole('teacher'))
                                                 <div class="d-flex">
-                                                    <button class="btn btn-primary mx-2 edit-question" value=" {{ $question->id }} "> Edit </button>
+                                                    <!-- <button class="btn btn-primary mx-2 edit-question" value=" {{ $question->id }} "> Edit </button> -->
                                                     <button class="btn btn-danger delete-question" value=" {{ $question->id }} "> Delete </button>
                                                 </div>
                                             @endif
@@ -167,18 +170,24 @@
                     <h5 class="modal-title" id="accountModalLabel">Add Question </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    
-                
-                        <!-- question -->
-                        <div class="card border-0 mh-10 questions-wrapper">
+               
+                <form method="POST" enctype="multipart/form-data" id="store-question" action="javascript:void(0)" >
+                    <div class="modal-body px-5">
+                         <!-- question -->
+                         <div class="card border-0 mh-10 questions-wrapper">
                             <div class="card-body d-flex flex-column justify-content-center">
                                 
-                                <ul id="save_errlist"></ul>
+                                <ul id="save_errlist"> </ul>
                                 <!-- input fields -->
                                 <input type="hidden" name="quiz_id" id="save_quiz_id" value="{{$quiz_id}}">
                                 
                                 <div class="input-fields">
+                                     <!-- image -->
+                                     <div class="field__input relative mt-2">
+                                        <input type="file" name="image" id="image" class="w-full input border-0" placeholder="Image">
+                                    </div>
+                                    <!-- end- image -->
+                                
                                     <!-- question -->
                                     <div class="field__input relative mt-2">
                                         <input type="text" name="question" id="question" class="w-full input" placeholder="Type your question...">
@@ -228,14 +237,15 @@
                             </div>
                         </div>
                         <!-- end- question -->
-        
-                   
-                    
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary close-modal" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary save-question">Save</button>
-                </div>
+                        
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary save-puzzle">Save</button>
+                    </div>
+                </form>
+               
+               
             </div>
         </div>
     </div>
@@ -475,42 +485,88 @@
     });
     
     // store
-    $(document).on('click','.save-question', function(e) { 
+    // $(document).on('click','.save-question', function(e) { 
+    //     e.preventDefault();
+    //     var data = {
+    //         'question': $('#question').val(),
+    //         'option_1': $('#option_1').val(),
+    //         'option_2': $('#option_2').val(),
+    //         'option_3': $('#option_3').val(),
+    //         'option_4': $('#option_4').val(),
+    //         'key_answer': $('#key_answer').val(),
+    //         'quiz_id': $('#save_quiz_id').val(),
+    //     }
+                
+    //     var url = '{{ route("questions.store") }}';
+                
+    //     $.ajaxSetup({
+    //         headers: {
+    //             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+    //         }
+    //     });
+        
+    //     $.ajax({
+    //         type: "POST",
+    //         url: url, 
+    //         data: data,
+    //         dataType: "json",
+    //         success: function (response) {
+    //             if(response.status == 400) { 
+                
+    //                 $('#save_errlist').html("");
+    //                 $('#save_errlist').addClass("alert alert-danger");
+    //                 $.each(response.errors, function (key, error_values) { 
+    //                     $('#save_errlist').append('<li>'+ error_values +'</li>')
+    //                 });
+                    
+    //             } else { 
+    //                 $('#questionModal').modal('hide');
+    //                 Swal.fire(
+    //                     'Good job!',
+    //                     response.message,
+    //                     'success'
+    //                 )
+    //             }
+    //         }
+    //     });
+        
+    // });
+    
+    // store
+    $(document).on('submit','#store-question', function(e) { 
         e.preventDefault();
-        var data = {
-            'question': $('#question').val(),
-            'option_1': $('#option_1').val(),
-            'option_2': $('#option_2').val(),
-            'option_3': $('#option_3').val(),
-            'option_4': $('#option_4').val(),
-            'key_answer': $('#key_answer').val(),
-            'quiz_id': $('#save_quiz_id').val(),
-        }
-                
-        var url = '{{ route("questions.store") }}';
-                
+        
+        var formData = new FormData(this);
+        console.log(formData);
+        
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
         });
         
+        var url = '{{ route("questions.store") }}';
         $.ajax({
             type: "POST",
             url: url, 
-            data: data,
-            dataType: "json",
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
             success: function (response) {
+                console.log(response);
                 if(response.status == 400) { 
-                
                     $('#save_errlist').html("");
                     $('#save_errlist').addClass("alert alert-danger");
                     $.each(response.errors, function (key, error_values) { 
                         $('#save_errlist').append('<li>'+ error_values +'</li>')
                     });
-                    
                 } else { 
+                    $('#save_errlist').html("");
+                    $('#save_errlist').removeClass("alert alert-danger");
                     $('#questionModal').modal('hide');
+                    $('#questionModal').find('input').val("");
+                    
                     Swal.fire(
                         'Good job!',
                         response.message,

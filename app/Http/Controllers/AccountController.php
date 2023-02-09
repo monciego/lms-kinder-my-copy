@@ -21,7 +21,14 @@ class AccountController extends Controller
      */
     public function index()
     {
-        $users = User::all()->except(Auth::id());
+        if (Auth::user()->hasRole('admin')) {
+            $users = User::all()->except(Auth::id());
+        }
+        else { 
+            $teacher = User::where('id',Auth::id())->first();
+            $grade = $teacher->grade; 
+            $users = User::whereRoleIs('student')->where('grade', $grade)->get();
+        }
         return view('account', compact('users'));
     }
     
@@ -55,10 +62,19 @@ class AccountController extends Controller
                 'errors'=>$validator->messages(),
             ]);
         }
-        else {      
+        else {   
+            
+            if($request->role_id == 'admin') { 
+                $grade_level = null;
+            }
+            else { 
+                $grade_level = $request->grade;
+            }
+            
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
+                'grade' => $grade_level,
                 'password' => Hash::make($request->password),
             ]);
             $user->attachRole($request->role_id); 
@@ -75,6 +91,7 @@ class AccountController extends Controller
             return response()->json([ 
                 'status'=>200, 
                 'status'=>$user_id, 
+                'grade_level'=>$grade_level, 
                 'message'=>'Account Created Successfully',
             ]);
         }
@@ -88,7 +105,8 @@ class AccountController extends Controller
      */
     public function show($id)
     {
-        //
+        $user = User::where('id', $id)->with('parent_information')->get();
+        return view('parents-information-view', compact('user'));
     }
 
     /**
@@ -101,9 +119,17 @@ class AccountController extends Controller
     {
         $user = User::find($id);
         
+        if ($user->hasRole('admin ')) {
+            $show_grade_level = false;
+        } 
+        else { 
+            $show_grade_level = true;
+        }
+        
         if ($user) {
             return response()->json([ 
                 'status'=>200, 
+                'show_grade_level'=>$show_grade_level,
                 'user'=>$user,
             ]);
         }
@@ -145,6 +171,7 @@ class AccountController extends Controller
             
                 $user->name = $request->input('name');
                 $user->email = $request->input('email');
+                $user->grade = $request->input('grade');
                 $user->password = Hash::make($request->input('password'));
                 $user->save();
                 

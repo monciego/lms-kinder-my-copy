@@ -106,6 +106,7 @@ class QuestionController extends Controller
     
         $validator = Validator::make($request->all(), [
             'question' => 'required|string',
+            'image' => 'image|mimes:jpg,png,jpeg',
             'option_1' => 'required|string',
             'option_2' => 'required|string',
             'option_3' => 'required|string',
@@ -134,6 +135,13 @@ class QuestionController extends Controller
                 'key_answer' => $request->key_answer,
             ]);
             
+            if($request->file('image')) {
+                $file = $request->file('image');
+                $extension = $file->getClientOriginalExtension();
+                $filename = time() . '.' .$extension;
+                $file->move('uploads/quiz/', $filename);
+                $question->image = $filename; 
+            }
             
             
             $question->quiz()->associate($quiz_id);

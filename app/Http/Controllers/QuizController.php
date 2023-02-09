@@ -58,12 +58,15 @@ class QuizController extends Controller
         }
         else { 
             $user_id = Auth::id();
-            $quiz = Quiz::create([
-                'quiz_name' => $request->quiz_name,
-                'instruction' => $request->instruction,
-                'deadline' => $request->deadline,
-                'category' => $request->category,
-            ]);
+            
+            $quiz = new Quiz; 
+            $quiz->quiz_name = $request->input('quiz_name');
+            $quiz->instruction = $request->input('instruction');
+            $quiz->deadline = $request->input('deadline');
+            $quiz->category = $request->input('category');
+            
+            
+            $quiz->subject()->associate($request->input('subject_id'));
             $quiz->user()->associate($user_id);
             $quiz->save();
             
@@ -306,33 +309,87 @@ class QuizController extends Controller
         }
     }
      
-    public function showQuizzes(Request $request) { 
+    public function showQuizzes(Request $request, $id) { 
     
-       
-        
         if(Auth::user()->hasRole('teacher')) { 
             
             $user_id = Auth::id();
             $quizzes = Quiz::where('user_id', $user_id)
             ->where('category', 'quiz')
+            ->where('subject_id', $id)
             ->with('user')
             ->get();
             
-            return view('quiz', ['quizzes'=> $quizzes]);
+            return view('quiz', ['quizzes'=> $quizzes, 'subject_id'=> $id]);
             
         }
         else { 
             
             $quizzes = Quiz::with('user')
             ->where('category', 'quiz')
+            ->where('subject_id', $id)
             ->with('user')
             ->get();
                 
-            return view('quiz', ['quizzes'=> $quizzes]);
+            return view('quiz', ['quizzes'=> $quizzes, 'subject_id'=> $id]);
+        }
+        
+    }
+    
+    public function showExercises(Request $request, $id) { 
+    
+        if(Auth::user()->hasRole('teacher')) { 
+            
+            $user_id = Auth::id();
+            $quizzes = Quiz::where('user_id', $user_id)
+            ->where('category', 'exercise')
+            ->where('subject_id', $id)
+            ->with('user')
+            ->get();
+            
+            return view('exercise', ['quizzes'=> $quizzes, 'subject_id'=> $id]);
+            
+        }
+        else { 
+            
+            $quizzes = Quiz::with('user')
+            ->where('category', 'exercise')
+            ->where('subject_id', $id)
+            ->with('user')
+            ->get();
+                
+            return view('quiz', ['quizzes'=> $quizzes, 'subject_id'=> $id]);
         }
         
     }
      
+    public function showExaminations(Request $request, $id) { 
+    
+        if(Auth::user()->hasRole('teacher')) { 
+            
+            $user_id = Auth::id();
+            $quizzes = Quiz::where('user_id', $user_id)
+            ->where('category', 'exams')
+            ->where('subject_id', $id)
+            ->with('user')
+            ->get();
+            
+            return view('exam', ['quizzes'=> $quizzes, 'subject_id'=> $id]);
+            
+        }
+        else { 
+            
+            $quizzes = Quiz::with('user')
+            ->where('category', 'exams')
+            ->where('subject_id', $id)
+            ->with('user')
+            ->get();
+                
+            return view('exam', ['quizzes'=> $quizzes, 'subject_id'=> $id]);
+        }
+        
+    }
+    
     public function edit($id)
     {
         

@@ -15,7 +15,7 @@
                      <!-- table -->                                
                      <div class="mb-4">
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                            <h3 class="m-0 font-weight-bold text-primary fw-bold">Quizzes</h3>
+                            <h3 class="m-0 font-weight-bold text-primary fw-bold">Exams</h3>
                             @if(Auth::user()->hasRole('teacher'))
                                 <button type="button" class="add-quiz-trigger btn btn-primary rounded-1 px-5" data-bs-toggle="modal" data-bs-target="#quizModal"> New </button>
                             @endif
@@ -30,7 +30,7 @@
                                 
                                     <thead>
                                         <tr>
-                                            <th>Quiz</th>
+                                            <th>Exam</th>
                                             <th>Instruction</th>
                                             <th>Uploaded</th>
                                             <th>Deadline</th>
@@ -74,7 +74,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="accountModalLabel">Add Quiz</h5>
+                    <h5 class="modal-title" id="accountModalLabel">Add Exam</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
@@ -85,7 +85,7 @@
                        <ul id="save_errlist"></ul>
                                                   
                             <input type="hidden" id="subject_id" name="subject_id" value="{{ $subject_id }}">
-                            <input type="hidden" id="category" name="category" value="quiz">
+                            <input type="hidden" id="category" name="category" value="exams">
                         
                             <!-- Quiz Name -->
                             <div>

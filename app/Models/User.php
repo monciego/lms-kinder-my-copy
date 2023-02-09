@@ -21,6 +21,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'grade',
         'password',
     ];
 
@@ -86,5 +87,20 @@ class User extends Authenticatable
     public function puzzle_responses()
     {
         return $this->hasMany(PuzzleResponse::class);
+    }
+    
+    public function parent_information()
+    {
+        return $this->hasOne(ParentInformation::class);
+    }
+    
+    public function subjects() 
+    { 
+        return $this->hasMany(Subject::class);
+    }
+    
+    public function activities() 
+    { 
+        return $this->hasMany(Activities::class);
     }
 }

@@ -14,8 +14,14 @@
                     <!-- table -->                                
                     <div class="mb-4">
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                            <h3 class="m-0 font-weight-bold text-primary fw-bold">Accounts</h3>
+                            @if(Auth::user()->hasRole('admin'))
+                                <h3 class="m-0 font-weight-bold text-primary fw-bold">Accounts</h3>
+                            @else 
+                                <h3 class="m-0 font-weight-bold text-primary fw-bold">Students</h3>
+                            @endif
+                            
                             <button type="button" class="btn btn-primary rounded-1 px-5" data-bs-toggle="modal" data-bs-target="#accountModal"> New </button>
+                            
                         </div>
                             
                         <div id="success_message"> </div>
@@ -28,7 +34,10 @@
                                     <thead>
                                         <tr>
                                             <th>Name</th>
-                                            <th>Account Type</th>
+                                            @if(Auth::user()->hasRole('admin'))
+                                                <th>Account Type</th>
+                                            @endif
+                                            <th>Grade Level</th>
                                             <th>Email</th>
                                             <th>Action</th>
                                         </tr>
@@ -39,16 +48,29 @@
                                             <tr>
                                                 <td> {{$user->name}} </td>
                                                 @foreach($user->roles as $role)
-                                                    <td> {{$role->name}} </td>
+                                                    @if(Auth::user()->hasRole('admin'))
+                                                        <td> {{$role->name}} </td>
+                                                    @endif
                                                 @endforeach
+                                                <td>
+                                                    @if($user->grade != null)
+                                                        <span>Grade {{$user->grade}}</span>
+                                                    @else 
+                                                        <span>admin</span>
+                                                    @endif
+                                                </td>
                                                 <td> {{$user->email}} </td>
-                                                
                                                 <td>
                                                 @if(Auth::user()->hasRole('teacher|admin'))
                                                     @if ($role->name == 'admin'  )
                                                         <button disabled type="button" value="{{ $user->id }}" class="edit-account btn btn-primary"> Edit </button> 
                                                         <button disabled type="button" value="{{ $user->id }}" class="delete-account btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"> Delete </button>
-                                                    @else 
+                                                    @else
+                                                        @foreach($user->roles as $role )
+                                                            @if($role->name == 'student')
+                                                                <a href="{{ route('accounts.show' , $user->id ) }}" class="btn btn-secondary"> View </a>
+                                                            @endif
+                                                        @endforeach
                                                         <button type="button" value="{{ $user->id }}" class="edit-account btn btn-primary"> Edit </button> 
                                                         <button type="button" value="{{ $user->id }}" class="delete-account btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal"> Delete </button>
                                                     @endif
@@ -115,14 +137,25 @@
                             type="password"
                             name="password_confirmation" required />
                 </div>
-    
                 <!-- Select Option Rol type -->
                 <div class="mt-4">
                     <x-label for="role_id" value="{{ __('Register as:') }}" />
                     <select name="role_id" id="role_id" class="block mt-1 w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
-                        <option value="admin">Admin</option>
-                        <option value="teacher">Teacher</option>
-                        <option value="student">Student</option>
+                        @if(Auth::user()->hasRole('admin'))
+                            <option value="admin">Admin</option>
+                            <option value="teacher">Teacher</option>
+                        @endif
+                            <option value="student">Student</option>
+                    </select>
+                </div>
+                
+                <!-- Select Grade  -->
+                <div class="mt-4 grade-level d-none">
+                    <x-label for="grade" value="{{ __('Grade level') }}" />
+                    <select name="grade" id="grade" class="block mt-1 w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
+                        <option value="1">Grade 1</option>
+                        <option value="2">Grade 2</option>
+                        <option value="3">Grade 3</option>
                     </select>
                 </div>
     
@@ -183,6 +216,16 @@
                             type="password"
                             name="password_confirmation" required />
                 </div>
+                
+                 <!-- Select Grade  -->
+                <div class="mt-4 edit-grade-level d-none">
+                    <x-label for="edit_grade_level" value="{{ __('Grade level') }}" />
+                    <select name="edit_grade_level" id="edit_grade_level" class="block mt-1 w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
+                        <option value="1">Grade 1</option>
+                        <option value="2">Grade 2</option>
+                        <option value="3">Grade 3</option>
+                    </select>
+                </div>
                
                 <!-- end- input fields -->
             </div>
@@ -224,18 +267,36 @@
 <script>
       
 $(document).ready(function () {
+    // hide grade level input
    
+    
+    // get the role when role is changes
+    $(document).on('change', '#role_id' , function () {
+       var role = $('#role_id').val();
+       
+        if(role == 'student' || role == 'teacher') { 
+            $('.grade-level').removeClass('d-none');
+        }
+        else { 
+            $('.grade-level').addClass('d-none');
+        }
+    });
+    
+    
+    
     // store
     $(document).on('click','.save-account', function(e) { 
         e.preventDefault();
-        
+                
         var data = {
-        'name': $('#name').val(),
-        'email': $('#email').val(),
-        'password': $('#password').val(),
-        'password_confirmation': $('#password_confirmation').val(),
-        'role_id': $('#role_id').val(),
+            'name': $('#name').val(),
+            'email': $('#email').val(),
+            'grade': $('#grade').val(),
+            'password': $('#password').val(),
+            'password_confirmation': $('#password_confirmation').val(),
+            'role_id': $('#role_id').val(),
         }
+        
         
         $.ajaxSetup({
             headers: {
@@ -295,6 +356,15 @@ $(document).ready(function () {
                     $('#edit_email').val(response.user.email);
                     $('#edit_password').val("");
                     $('#edit_account_id').val(account_id);
+                    
+                    if (response.show_grade_level == true) {
+                        $('.edit-grade-level').removeClass('d-none');
+                        $('.edit-grade-level option[value='+ response.user.grade +']').attr("selected","selected");
+                    }
+                    else { 
+                        $('.edit-grade-level').addClass('d-none');
+                    }
+                    console.log(response.show_grade_level);
                 }
                 
             }
@@ -310,6 +380,7 @@ $(document).ready(function () {
             'name': $('#edit_name').val(),
             'email': $('#edit_email').val(),
             'password': $('#edit_password').val(),
+            'grade': $('#edit_grade_level').val(),
         }
         
         $.ajaxSetup({
