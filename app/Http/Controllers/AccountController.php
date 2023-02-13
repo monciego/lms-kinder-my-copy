@@ -41,6 +41,13 @@ class AccountController extends Controller
     {
         
     }
+    
+    public function studentProgress($id)
+    {
+        
+    
+        return view('students-progress');    
+    }
 
     /**
      * Store a newly created resource in storage.

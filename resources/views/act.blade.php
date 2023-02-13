@@ -12,6 +12,7 @@
                     <div>
                         <h2 class="text-2xl font-bold">Activities</h2>
                     </div>
+                    @if(Auth::user()->hasRole('teacher'))
                     <div class="flex items-center gap-2">
                         <div>
                             <a href="{{ route('activities.create', $id) }}"
@@ -24,6 +25,7 @@
                             </a>
                         </div>
                     </div>
+                    @endif
                 </div>
 
                 <div class="p-6 grid grid-cols-6 gap-6">

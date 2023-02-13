@@ -10,5 +10,6 @@ class GradeLevel extends Model
     use HasFactory;
     protected $fillable = [
         'grade_level_name',
+        'user_id',
     ];
 }

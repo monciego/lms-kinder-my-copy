@@ -9,18 +9,11 @@ class Subject extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'user_id', /* teacher_id */
         'grade_level_id',
         'subject_name',
-        'subject_code',
         'start',
         'end',
     ];
-    
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
     
     public function grade_level() 
     { 

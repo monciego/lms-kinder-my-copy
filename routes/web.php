@@ -75,9 +75,9 @@ Route::group(['middleware' => ['auth', 'role:teacher|student']], function() {
     Route::resource('grade', GradeController::class);
     
     // new routes for redefense
+    Route::get('student-progress/{id}', 'App\Http\Controllers\AccountController@studentProgress')->name('student-progress');
     Route::get('show-examinations/{id}', 'App\Http\Controllers\QuizController@showExaminations')->name('show-examinations');
     Route::get('show-exercises/{id}', 'App\Http\Controllers\QuizController@showExercises')->name('show-exercises');
-    Route::get('subject/show-students/{id}', 'App\Http\Controllers\DashboardController@showStudents')->name('show-students');
     Route::get('subject/content/{id}', 'App\Http\Controllers\DashboardController@showSubjectContent')->name('show-subject-content');
     Route::get('act/{id}', 'App\Http\Controllers\DashboardController@showAct')->name('show-act');
     Route::get('activities/create/{id}', 'App\Http\Controllers\ActivitiesController@create')->name('activities.create');

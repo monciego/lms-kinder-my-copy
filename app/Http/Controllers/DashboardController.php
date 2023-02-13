@@ -28,14 +28,15 @@ class DashboardController extends Controller
           { 
                $student = User::where('id', Auth::id())->first();
                $student_grade = $student->grade; 
-               $subjects = Subject::where('grade_level_id', $student_grade)->with('user')->get();
+               $subjects = Subject::where('grade_level_id', $student_grade)->get();
                return view('studentdash', compact('subjects'));
           }
      }
      elseif(Auth::user()->hasRole('teacher'))
      {
-          $subjects = Subject::where('user_id', Auth::id())
-                              ->with('user')
+          $teacher = User::where('id', Auth::id())->first(); 
+          $teacher_grade = $teacher->grade;
+          $subjects = Subject::where('grade_level_id', $teacher_grade)
                               ->with('grade_level')
                               ->get();
           return view('teacherdash', ['subjects'=>$subjects]);
@@ -49,9 +50,9 @@ class DashboardController extends Controller
    
    public function showSubject($id)
    {
-          $subjects = Subject::where('grade_level_id', $id)->with('user')->get();
+          $subjects = Subject::where('grade_level_id', $id)->get();
           $teachers = User::whereRoleIs('teacher')->get();
-          return view('subject', ['subjects'=>$subjects, 'teachers'=>$teachers]);
+          return view('subject', ['subjects'=>$subjects, 'teachers'=>$teachers, 'id'=>$id]);
    }
    
    public function editSubject($id) 
@@ -95,12 +96,10 @@ class DashboardController extends Controller
           $subject = Subject::find($id); 
           
           if ($subject) {
-               $user_id = $request->input('user_id');
                
                $subject->subject_name = $request->input('subject_name');
                $subject->start = $request->input('start');
                $subject->end = $request->input('end');
-               $subject->user()->associate($user_id);
                $subject->save();
                
                if ($request->ajax()) {
@@ -156,22 +155,5 @@ class DashboardController extends Controller
           
           return view('act', ['activities'=>$activities, 'id'=>$id]);
    }
-   
-   public function showStudents($id) 
-   {
-          $grade = Subject::where('id', $id)->with('grade_level')->first(); 
-          $grade_id = $grade->grade_level->id;
-          
-          $students = User::where('grade', $grade_id)->whereRoleIs('student')->get();
-          
-          $quizzes = Quiz::where('subject_id', $id)->get();
-          $total_quiz = count($quizzes);
-          
-          $answered_quizzes = Quiz::where('subject_id', $id)
-                                   ->with('user')
-                                   ->get();
-                    
-          return view('students', ['students'=>$students]);
-   }
-   
+      
 }

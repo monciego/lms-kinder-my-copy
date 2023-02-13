@@ -86,8 +86,8 @@ class ActivitiesController extends Controller
      */
     public function show($activities)
     {
-        // $activity = Activities::findOrFail($activities);
-        // return view('act-show', compact('activity'));
+        $activity = Activities::findOrFail($activities);
+        return view('act-show', compact('activity'));
     }
 
     /**
