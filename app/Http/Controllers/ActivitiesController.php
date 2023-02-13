@@ -44,7 +44,7 @@ class ActivitiesController extends Controller
         ]);
 
 
-        if ($validator->fails()) 
+        if ($validator->fails())
         {
             return redirect()->route('activites.create')
                 ->withErrors($validator)
@@ -74,7 +74,7 @@ class ActivitiesController extends Controller
             'user_id' => Auth::id(),
             'subject_id' => $request->input('id')
         ]);
-        
+
         return redirect()->route('show-act', $request->input('id'));
     }
 
@@ -86,8 +86,8 @@ class ActivitiesController extends Controller
      */
     public function show($activities)
     {
-        // $activity = Activities::findOrFail($activities);
-        // return view('act-show', compact('activity'));
+        $activity = Activities::findOrFail($activities);
+        return view('act-show', compact('activity'));
     }
 
     /**
