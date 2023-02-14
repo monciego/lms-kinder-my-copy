@@ -94,9 +94,9 @@ class User extends Authenticatable
         return $this->hasOne(ParentInformation::class);
     }
     
-    public function subjects() 
+    public function grade_levels() 
     { 
-        return $this->hasMany(Subject::class);
+        return $this->hasMany(GradeLevel::class);
     }
     
     public function activities() 

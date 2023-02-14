@@ -16,6 +16,9 @@ class CreateGradeLevelsTable extends Migration
         Schema::create('grade_levels', function (Blueprint $table) {
             $table->increments('id');
             $table->string('grade_level_name');
+            
+            $table->integer('user_id')->unsigned()->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

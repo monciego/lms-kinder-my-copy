@@ -26,8 +26,12 @@
                                                 {{ optional($subject->user)->name }}                                                
                                             @endif
                                             </div>
-                                            <div class="text-sm text-center text-uppercase mb-1">                                                
-                                                {{ Carbon\carbon::parse($subject->start)->format('g:i A') }} - {{ Carbon\carbon::parse($subject->end)->format('g:i A') }}
+                                            <div class="text-sm text-center text-uppercase mb-1">
+                                                @if(Carbon\carbon::parse($subject->start)->format('g:i A') == '12:00 AM' && Carbon\carbon::parse($subject->end)->format('g:i A') == '12:00 AM')
+                                                    <span class="text-danger"> NO SCHEDULED ASSIGNED </span>
+                                                @else
+                                                    {{ Carbon\carbon::parse($subject->start)->format('g:i A') }} - {{ Carbon\carbon::parse($subject->end)->format('g:i A') }}
+                                                @endif                                                
                                             </div>
                                             
                                             <div class="mt-2 d-flex m-auto gap-1" style="width: fit-content">
@@ -81,16 +85,7 @@
                         <x-label for="end" :value="__('Ends at')" />
                         <x-input id="end" class="block mt-1 w-full" type="time" name="end" :value="old('end')" required autofocus />
                     </div>
-                    
-                    <div class="mt-4">
-                        <x-label for="instructor" value="{{ __('Assign instructor') }}" />
-                        <select name="instructor" id="instructor" class="block mt-1 w-full border-gray-300 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 rounded-md shadow-sm">
-                            @foreach($teachers as $teacher)
-                                <option value="{{ $teacher->id }}"> {{ $teacher->name }} </option>
-                            @endforeach
-                        </select>
-                    </div>
-                        
+                                        
                     <!-- end- input fields -->
                 </div>
                 <div class="modal-footer">
@@ -209,7 +204,6 @@ $(document).ready(function () {
             'subject_name': $('#name').val(),
             'start': $('#start').val(),
             'end': $('#end').val(),
-            'user_id': $('#instructor :selected').val(),
         }
         
         console.log(data);

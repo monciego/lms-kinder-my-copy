@@ -76,23 +76,6 @@
                         </a>
                         <!-- END- ACTIVITIES -->
                         
-                        <!-- STUDENTS -->
-                        <a href="{{ route('show-students', $id) }}" class="col-xl-4 col-md-6 mb-4">
-                            <div class="card border-left-primary shadow-sm h-100 py-6">
-                                <div class="card-body">
-                                    <div class="row no-gutters align-items-center">
-                                        <div class="col mr-2">
-                                            <div class="text-md text-center fw-bold font-weight-bold text-primary text-uppercase mb-1">
-                                                STUDENTS
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </a>
-                        <!-- END- STUDENTS -->
-        
-                        
                     </div>
                     
                     

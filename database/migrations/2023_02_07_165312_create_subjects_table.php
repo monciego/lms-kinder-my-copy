@@ -23,8 +23,6 @@ class CreateSubjectsTable extends Migration
             $table->integer('grade_level_id')->unsigned()->nullable();
             $table->foreign('grade_level_id')->references('id')->on('grade_levels')->onDelete('cascade');
             
-            $table->integer('user_id')->unsigned()->nullable();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }
