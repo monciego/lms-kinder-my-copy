@@ -19,10 +19,10 @@
                                 @else
                                 <h3 class="m-0 font-weight-bold text-primary fw-bold">Students</h3>
                                 @endif
-                                @if(Auth::user()->hasRole('admin'))
+
                                 <button type="button" class="btn btn-primary rounded-1 px-5" data-bs-toggle="modal"
                                     data-bs-target="#accountModal"> New </button>
-                                @endif
+
                             </div>
 
                             <div id="success_message"> </div>
@@ -159,7 +159,6 @@
                         </select>
                     </div>
 
-                    @if(Auth::user()->hasRole('admin'))
                     <!-- Select Grade  -->
                     <div class="mt-4 grade-level d-none">
                         <x-label for="grade" value="{{ __('Grade level') }}" />
@@ -168,8 +167,8 @@
                             <option value="1">Grade 1</option>
                             <option value="2">Grade 2</option>
                             <option value="3">Grade 3</option>
+                        </select>
                     </div>
-                    @endif
 
                     <!-- end- input fields -->
                 </div>
@@ -225,7 +224,7 @@
                         <x-input id="edit_password_confirmation" class="block mt-1 w-full" type="password"
                             name="password_confirmation" required />
                     </div>
-                    @if(Auth::user()->hasRole('admin'))
+
                     <!-- Select Grade  -->
                     <div class="mt-4 edit-grade-level d-none">
                         <x-label for="edit_grade_level" value="{{ __('Grade level') }}" />
@@ -236,7 +235,7 @@
                             <option value="3">Grade 3</option>
                         </select>
                     </div>
-                    @endif
+
                     <!-- end- input fields -->
                 </div>
                 <div class="modal-footer">
@@ -478,7 +477,6 @@
             }
         });
     });
-
 
 
 });
