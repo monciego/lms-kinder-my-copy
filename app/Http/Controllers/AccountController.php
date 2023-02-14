@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Grade;
+use App\Models\Result;
+use App\Models\Subject;
 use App\Providers\RouteServiceProvider;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Auth;
@@ -24,14 +26,14 @@ class AccountController extends Controller
         if (Auth::user()->hasRole('admin')) {
             $users = User::all()->except(Auth::id());
         }
-        else { 
+        else {
             $teacher = User::where('id',Auth::id())->first();
-            $grade = $teacher->grade; 
+            $grade = $teacher->grade;
             $users = User::whereRoleIs('student')->where('grade', $grade)->get();
         }
         return view('account', compact('users'));
     }
-    
+
     /**
      * Show the form for creating a new resource.
      *
@@ -39,14 +41,20 @@ class AccountController extends Controller
      */
     public function create()
     {
-        
+
     }
-    
+
     public function studentProgress($id)
     {
-        
-    
-        return view('students-progress');    
+        $grade = Subject::where('id', $id)->with('grade_level')->first();
+        $grade_id = $grade->grade_level->id;
+        $students = User::with('results', 'grades')->where('grade', $grade_id)->whereRoleIs('student')->get();
+        // dd($students);
+/*
+        $results = Result::with('quiz', 'user')->get();
+        dd($results); */
+
+        return view('students-progress', compact('students'));
     }
 
     /**
@@ -65,40 +73,40 @@ class AccountController extends Controller
 
         if ($validator->fails()) {
             return response()->json([
-                'status'=>400, 
+                'status'=>400,
                 'errors'=>$validator->messages(),
             ]);
         }
-        else {   
-            
-            if($request->role_id == 'admin') { 
+        else {
+
+            if($request->role_id == 'admin') {
                 $grade_level = null;
             }
-            else { 
+            else {
                 $grade_level = $request->grade;
             }
-            
+
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
                 'grade' => $grade_level,
                 'password' => Hash::make($request->password),
             ]);
-            $user->attachRole($request->role_id); 
-            
+            $user->attachRole($request->role_id);
+
             $user_id = $user->id;
-            
+
             if ($user->hasRole('student')) {
                 $grade = Grade::create([
                     'user_id' => $user_id,
                     'grade' => 'n/a'
                 ]);
             }
-            
-            return response()->json([ 
-                'status'=>200, 
-                'status'=>$user_id, 
-                'grade_level'=>$grade_level, 
+
+            return response()->json([
+                'status'=>200,
+                'status'=>$user_id,
+                'grade_level'=>$grade_level,
                 'message'=>'Account Created Successfully',
             ]);
         }
@@ -125,24 +133,24 @@ class AccountController extends Controller
     public function edit($id)
     {
         $user = User::find($id);
-        
+
         if ($user->hasRole('admin ')) {
             $show_grade_level = false;
-        } 
-        else { 
+        }
+        else {
             $show_grade_level = true;
         }
-        
+
         if ($user) {
-            return response()->json([ 
-                'status'=>200, 
+            return response()->json([
+                'status'=>200,
                 'show_grade_level'=>$show_grade_level,
                 'user'=>$user,
             ]);
         }
-        else { 
-            return response()->json([ 
-                'status'=>404, 
+        else {
+            return response()->json([
+                'status'=>404,
                 'message'=>'Account Not Found',
             ]);
         }
@@ -163,43 +171,43 @@ class AccountController extends Controller
         ]);
 
         if ($validator->fails()) {
-        
+
             return response()->json([
-                'status'=>400, 
+                'status'=>400,
                 'errors'=>$validator->messages(),
             ]);
-            
+
         }
-        else {     
-        
-            $user = User::find($id); 
-            
+        else {
+
+            $user = User::find($id);
+
             if ($user) {
-            
+
                 $user->name = $request->input('name');
                 $user->email = $request->input('email');
                 $user->grade = $request->input('grade');
                 $user->password = Hash::make($request->input('password'));
                 $user->save();
-                
+
                 if ($request->ajax()) {
-                    return response()->json([ 
-                        'status'=>200, 
+                    return response()->json([
+                        'status'=>200,
                         'message'=>'Account Updated Successfully',
                         'user'=>$user,
                     ]);
                 }
-                
+
             }
-            else { 
-            
-                return response()->json([ 
-                    'status'=>404, 
+            else {
+
+                return response()->json([
+                    'status'=>404,
                     'message'=>'Account Not Found',
                 ]);
-                
+
             }
-            
+
         }
     }
 
@@ -213,8 +221,8 @@ class AccountController extends Controller
     {
         $user = User::find($id);
         $user->delete();
-        return response()->json([ 
-            'status'=>200, 
+        return response()->json([
+            'status'=>200,
             'user'=>$user,
             'message'=>'Account has been deleted.',
         ]);
